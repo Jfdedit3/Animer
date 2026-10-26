@@ -2,7 +2,7 @@ import {handleApi} from '../server/router.js';
 // Filled by scripts/build-worker.mjs; source contains no media or session credentials.
 const assets=__ANIMER_ASSETS__;
 const TYPES={html:'text/html;charset=utf-8',js:'text/javascript;charset=utf-8',css:'text/css;charset=utf-8',json:'application/json',webmanifest:'application/manifest+json',png:'image/png',svg:'image/svg+xml',gif:'image/gif',ttf:'font/ttf',ico:'image/x-icon',txt:'text/plain;charset=utf-8',md:'text/plain;charset=utf-8'};
-const CSP="default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss://db.nartya.app; worker-src 'self' blob:; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+const CSP="default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https:; worker-src 'self' blob:; frame-src https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
 export default {
  async fetch(request,env,ctx){
   const url=new URL(request.url);

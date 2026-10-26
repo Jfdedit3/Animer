@@ -1,3 +1,4 @@
+import {handleAnimeSama} from './animesama.js';
 import {publicHttps,inDomains,sealTicket,openTicket,checkedFetch,boundedText} from './security.js';
 import {setRecipe} from '../src/shared/sourceRecipe.js';
 import {extractFromHtml,isExtractedVideoUrlConsistentWithEmbed} from '../src/shared/videoExtract.js';
@@ -96,6 +97,7 @@ async function media(request,env,fetcher){
 async function routeApi(request,env={},fetcher=fetch){
  const url=new URL(request.url);
  try{
+  if(url.pathname.startsWith('/api/animesama/'))return await handleAnimeSama(request,env,fetcher);
   if(url.pathname==='/api/web/health')return json({ok:true,app:'Animer',relayConfigured:!!env.STREAM_SIGNING_KEY});
   if(url.pathname==='/api/web/resolve')return await resolve(request,env,fetcher);
   if(url.pathname==='/api/media')return await media(request,env,fetcher);

@@ -4,6 +4,7 @@ compatibility_date = "2026-10-01"
 
 [vars]
 UPSTREAM_API_URL = "https://anime.nartya.app"
+ALLOWED_WEB_ORIGINS = "https://jfdedit3.github.io"
 
 # Before first deployment: wrangler secret put STREAM_SIGNING_KEY
 # Value: a cryptographically random 32-byte key, base64 encoded.

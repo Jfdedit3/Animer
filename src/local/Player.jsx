@@ -2,10 +2,24 @@ import { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
 import { saveEpisodeProgress, getEpisodeProgress } from "../api/progress";
 import { LOCAL_USER } from "./database";
-export default function Player({ url, anime, season, episode, onClose }) {
+export default function Player({
+  url,
+  anime,
+  season,
+  episode,
+  kind,
+  format,
+  language = "vostfr",
+  onClose,
+}) {
   const ref = useRef(),
     [error, setError] = useState("");
-  const direct = /\.(mp4|webm|m3u8)(?:[?#]|$)/i.test(url);
+  const hlsSource =
+    format === "hls" ||
+    /[?&]kind=hls(?:&|$)/.test(url) ||
+    /\.m3u8(?:[?#]|$)/i.test(url);
+  const direct =
+    kind === "video" || hlsSource || /\.(mp4|webm|m3u8)(?:[?#]|$)/i.test(url);
   useEffect(() => {
     if (!direct) return;
     const video = ref.current;
@@ -18,7 +32,7 @@ export default function Player({ url, anime, season, episode, onClose }) {
           slug: anime.slug,
           seasonId: season,
           episodeNumber: episode,
-          language: "vostfr",
+          language,
           positionSeconds: video.currentTime,
           duration: video.duration,
           title: anime.title,
@@ -37,7 +51,7 @@ export default function Player({ url, anime, season, episode, onClose }) {
         anime.slug,
         season,
         episode,
-        "vostfr",
+        language,
         LOCAL_USER.id,
       );
       if (
@@ -49,7 +63,7 @@ export default function Player({ url, anime, season, episode, onClose }) {
         video.currentTime = progress.positionSeconds;
     };
     if (
-      /\.m3u8(?:[?#]|$)/i.test(url) &&
+      hlsSource &&
       !video.canPlayType("application/vnd.apple.mpegurl") &&
       Hls.isSupported()
     ) {
@@ -78,7 +92,7 @@ export default function Player({ url, anime, season, episode, onClose }) {
       window.removeEventListener("pagehide", save);
       hls?.destroy();
     };
-  }, [url, anime.slug, season, episode, direct]);
+  }, [url, anime.slug, season, episode, direct, hlsSource, language]);
   return (
     <section className="local-player">
       <div>

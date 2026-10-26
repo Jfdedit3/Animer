@@ -12,6 +12,10 @@ import "./styles/glass.css";
 import "./styles/web.css";
 import WebInstall from "./components/WebInstall.jsx";
 
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, {scope: import.meta.env.BASE_URL}).catch(() => {});
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <HashRouter>

@@ -5,14 +5,29 @@ Site anime et PWA **sans inscription ni connexion**, publié sur **https://jfded
 ## Fonctionnement
 
 - Catalogue de secours inclus : jusqu’à 500 fiches TV/films issues d’anime-offline-database (ODbL / DbCL), datées et signalées à l’écran en cas de panne de Jikan.
-- Catalogue et recherche publics via [Jikan](https://jikan.moe/) / MyAnimeList, sans clé de compte.
+- Catalogue Anime-Sama par défaut : recherche, fiches, saisons, langues et listes d’épisodes récupérés sur `https://anime-sama.to/` par le relais.
+- Jikan / MyAnimeList reste disponible dans Réglages pour les métadonnées sans vidéo.
 - Fiches, synopsis, notes, bandes-annonces et épisodes répertoriés.
 - Favoris, listes, épisodes vus et historique conservés dans `localStorage` sur cet appareil.
 - Export/import JSON depuis Réglages. L’import remplace la bibliothèque locale. Effacer les données du site supprime la bibliothèque : exportez-la pour la conserver.
 - Préférences d’interface persistantes : effet glass et réduction des animations.
 - Aucune synchronisation de compte, aucun appel Supabase, aucun jeton de compte envoyé.
 
-**Le catalogue public ne fournit pas les vidéos des épisodes.** Il n’utilise pas l’API protégée de Nartya. La liste des épisodes peut être incomplète selon MyAnimeList. Jikan a répondu HTTP 503 pendant le contrôle dans cet environnement ; le catalogue de secours conserve une navigation utilisable sans ce service.
+## Anime-Sama et lecteurs vidéo
+
+Les pages Anime-Sama et `episodes.js?filever=…` sont publiques mais n’envoient pas d’autorisation CORS pour GitHub Pages. Un serveur est donc nécessaire ; GitHub Pages héberge l’interface statique et le relais récupère les données à la demande, avec un cache de dix minutes.
+
+Le relais expose `/api/animesama/catalog`, `/api/animesama/anime/:slug`, `/api/animesama/anime/:slug/episodes?season=…&lang=…` et `POST /api/animesama/resolve`. La résolution accepte uniquement des coordonnées d’épisode, relit les listes de la source et tente d’extraire le flux public du lecteur choisi. Les URL média passent par des capacités chiffrées limitées dans le temps ; le relais réécrit les playlists HLS et prend en charge les plages MP4. Aucun compte Nartya ni script distant exécuté pour analyser les listes. L’extraction n’enlève aucun DRM ou contrôle de compte.
+
+En cas de refus ou de lecteur non reconnu, le lecteur public d’origine est proposé dans une iframe protégée. Certains fournisseurs peuvent refuser leur intégration : choisissez alors un autre lecteur. La progression d’une iframe ne peut pas être mesurée ; marquez l’épisode vu manuellement.
+
+La version Pages utilise par défaut le relais préparé à `https://animer-web-jfdedit3.wittycharm129.chatgpt.site`. Son audience Sites est conservée tant que le propriétaire n’autorise pas son passage public. **Tant que ce relais reste privé, les appels depuis Pages sans connexion sont bloqués** : une sélection Anime-Sama datée, incluse dans le build, est affichée à sa place, avec un message explicite. Cette sélection ne simule pas la disponibilité de toutes les fiches et des vidéos.
+
+Pour utiliser un autre hébergement serveur, déployer `npm run build` avec le Worker `dist/server/index.js` (ou `npm run preview` derrière HTTPS). Configurer `STREAM_SIGNING_KEY` côté serveur avec 32 octets aléatoires encodés en base64, et `ALLOWED_WEB_ORIGINS=https://jfdedit3.github.io`. La clé reste uniquement côté serveur. Configurer ensuite la variable de dépôt GitHub `ANIMER_RELAY_URL` avec l’origine HTTPS du relais, sans secret, puis relancer le workflow Pages.
+
+Les captures réseau réelles ont confirmé le catalogue Frieren, deux saisons, 28 épisodes de la saison 1 et trois lecteurs. Deux lecteurs ont donné un flux HLS extractible ; le troisième a utilisé le mode iframe. Cela ne garantit pas la lecture de tous les hébergeurs. Les tests navigateur de décodage utilisent une vidéo générée.
+
+Le catalogue Jikan ne fournit pas de flux vidéo. La liste des épisodes peut être incomplète selon MyAnimeList ; son secours local est fourni en cas de panne.
 
 Une API publique compatible peut être configurée dans Réglages. Elle doit accepter CORS depuis `https://jfdedit3.github.io` et exposer des enveloppes `{data:…}` :
 
@@ -48,6 +63,6 @@ Le service worker met en cache la coque et les ressources. Il met aussi en cache
 
 ## Origine et licence
 
-Interface et composants de bibliothèque dérivés du client public [Nartya](https://github.com/NartyaTeam/nartya), licence ISC. Le client Android d’origine n’est pas modifié. La publication Sites antérieure reste privée et n’est pas utilisée comme relais par le site Pages.
+Interface et composants de bibliothèque dérivés du client public [Nartya](https://github.com/NartyaTeam/nartya), licence ISC. Le client Android d’origine n’est pas modifié. Le relais Sites conserve son audience actuelle jusqu’à autorisation explicite de son passage public.
 
 [LICENSE](LICENSE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)

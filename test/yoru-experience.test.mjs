@@ -6,15 +6,15 @@ import {normalizeFilters,filterCatalogBatch} from "../src/utils/catalogFilters.j
 import {apiErrorMessage,isRetryableStatus} from "../src/utils/apiErrors.js";
 import {checkpointValue,chooseResumeCheckpoint,writeCheckpoint,readCheckpoint} from "../src/utils/resumeCheckpoint.js";
 const memory=new Map();globalThis.localStorage={getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v)};
-test("a Nartya session never goes to a custom provider or lookalike hostname",()=>{
- assert.equal(canSendNartyaSession("https://anime.nartya.app/v1/streams/a"),true);
+test("public catalogue providers never receive a Nartya account session",()=>{
+ assert.equal(canSendNartyaSession("https://anime.nartya.app/v1/streams/a"),false);
  for(const u of ["https://anime.nartya.app.evil.example","https://api.example.org","http://anime.nartya.app","https://evil.example/anime.nartya.app"])assert.equal(canSendNartyaSession(u),false);
 });
 test("provider settings reject embedded credentials, insecure URLs and query secrets",()=>{
  for(const url of ["http://api.example.org","https://user:pass@api.example.org","https://api.example.org?token=secret","file:///tmp/source"])assert.throws(()=>normalizeProvider({id:"compatible",baseUrl:url}));
  const provider=saveProvider({id:"compatible",baseUrl:"https://api.example.org/",label:"My catalogue"});
  assert.equal(provider.baseUrl,"https://api.example.org");assert.equal(getProvider().publicCatalog,true);assert.equal(canSendNartyaSession("/api"),false);
- const a=providerCacheNamespace();saveProvider(null);assert.notEqual(providerCacheNamespace(),a);assert.equal(getProvider().publicCatalog,false);
+ const a=providerCacheNamespace();saveProvider(null);assert.notEqual(providerCacheNamespace(),a);assert.equal(getProvider().id,"anime-sama");assert.equal(getProvider().publicCatalog,true);
 });
 test("automatic glass policy reduces GPU work and honors OS accessibility",()=>{
  assert.deepEqual(resolveInterfacePolicy({glassEffects:true,performanceMode:"auto"},{memory:3,cores:8,prefersReducedMotion:true}),{glass:true,liteGlass:true,reducedMotion:true,animations:false});

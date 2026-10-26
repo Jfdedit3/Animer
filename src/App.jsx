@@ -1,3 +1,4 @@
+import { asCatalogue, asAnime, asEpisodes, asStream } from "./local/animesama";
 import { lazy, Suspense, useEffect, useState } from "react";
 import {
   Routes,
@@ -129,7 +130,8 @@ function Catalog() {
   const [input, setInput] = useState(q);
   useEffect(() => setInput(q), [q]);
   const result = useResource(async () => {
-    if (getProvider().id === "nartya") return publicCatalog(q, page);
+    if (getProvider().id === "anime-sama") return asCatalogue(q, page);
+    if (getProvider().id === "jikan") return publicCatalog(q, page);
     const data = await sourceGet(
       "/v1/anime/catalog?search=" + encodeURIComponent(q) + "&page=" + page,
     );
@@ -182,6 +184,21 @@ function Catalog() {
       ) : (
         <>
           <>
+            {result.data.snapshot && (
+              <p className="local-notice">
+                Sélection Anime-Sama enregistrée le{" "}
+                {new Date(result.data.fetchedAt).toLocaleDateString("fr-FR")}.
+                Le relais est indisponible ou non configuré : les fiches et
+                lecteurs en direct nécessitent son activation.{" "}
+                <a
+                  href="https://anime-sama.to/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Ouvrir Anime-Sama ↗
+                </a>
+              </p>
+            )}
             {result.data.fallback && (
               <p className="local-notice">
                 Jikan est indisponible. Catalogue de secours du{" "}
@@ -232,6 +249,7 @@ function Catalog() {
 function Anime() {
   const { slug } = useParams();
   const result = useResource(async () => {
+    if (slug.startsWith("as-")) return asAnime(slug);
     if (slug.startsWith("mal-")) return publicAnime(slug);
     const p = await sourceGet("/v1/anime/" + encodeURIComponent(slug));
     return {
@@ -257,20 +275,24 @@ function AnimeDetail({ anime }) {
     removeStatus = useListsStore((s) => s.remove);
   const [season, setSeason] = useState(anime.seasons?.[0]?.id || "saison1"),
     [page, setPage] = useState(1),
+    [lang, setLang] = useState(anime.seasons?.[0]?.languages?.[0] || "vostfr"),
+    [reader, setReader] = useState("auto"),
     [viewed, setViewed] = useState({}),
     [playing, setPlaying] = useState(null);
   const episodes = useResource(
     () =>
-      anime.slug.startsWith("mal-")
-        ? publicEpisodes(anime.slug, page)
-        : sourceGet(
-            "/v1/anime/" +
-              encodeURIComponent(anime.slug) +
-              "/seasons/" +
-              encodeURIComponent(season) +
-              "/episodes",
-          ),
-    [anime.slug, season, page],
+      anime.slug.startsWith("as-")
+        ? asEpisodes(anime.slug, season, lang)
+        : anime.slug.startsWith("mal-")
+          ? publicEpisodes(anime.slug, page)
+          : sourceGet(
+              "/v1/anime/" +
+                encodeURIComponent(anime.slug) +
+                "/seasons/" +
+                encodeURIComponent(season) +
+                "/episodes",
+            ),
+    [anime.slug, season, page, lang],
   );
   useEffect(() => {
     getAnimeProgressMap(anime.slug).then(setViewed);
@@ -289,7 +311,7 @@ function AnimeDetail({ anime }) {
           slug: anime.slug,
           seasonId: season,
           episodeNumber: ep.episode,
-          language: "vostfr",
+          language: lang,
           title: anime.title,
           cover: anime.cover,
           userId: LOCAL_USER.id,
@@ -301,6 +323,17 @@ function AnimeDetail({ anime }) {
   };
   const play = async (ep) => {
     try {
+      if (anime.slug.startsWith("as-")) {
+        const data = await asStream({
+          slug: anime.slug,
+          season,
+          lang,
+          episode: ep.episode,
+          reader,
+        });
+        setPlaying({ ...data, ep });
+        return;
+      }
       const entries = Object.values(
         ep.lecteurs?.vostfr || ep.lecteurs?.vf || {},
       );
@@ -313,7 +346,11 @@ function AnimeDetail({ anime }) {
         "/v1/streams/" + encodeURIComponent(first.id),
       );
       const url = safeProviderUrl(data.url, { appOrigin: location.origin });
-      setPlaying({ url, ep });
+      setPlaying({
+        url,
+        ep,
+        kind: /\.(mp4|webm|m3u8)(?:[?#]|$)/i.test(url) ? "video" : "embed",
+      });
     } catch (e) {
       toast.error(e.message);
     }
@@ -400,6 +437,12 @@ function AnimeDetail({ anime }) {
             value={season}
             onChange={(e) => {
               setSeason(e.target.value);
+              setLang(
+                anime.seasons?.find((s) => s.id === e.target.value)
+                  ?.languages?.[0] || "vostfr",
+              );
+              setPlaying(null);
+              setReader("auto");
               setPage(1);
             }}
           >
@@ -411,6 +454,62 @@ function AnimeDetail({ anime }) {
           </select>
         )}
       </div>
+      {anime.slug.startsWith("as-") && (
+        <div className="local-actions">
+          <label>
+            Langue{" "}
+            <select
+              aria-label="Langue des épisodes"
+              value={lang}
+              onChange={(e) => {
+                setLang(e.target.value);
+                setPlaying(null);
+                setReader("auto");
+              }}
+            >
+              {[
+                ...new Set([
+                  lang,
+                  ...(episodes.data?.languages ||
+                    anime.seasons?.find((s) => s.id === season)?.languages ||
+                    []),
+                ]),
+              ].map((l) => (
+                <option key={l} value={l}>
+                  {l.toUpperCase()}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Lecteur{" "}
+            <select
+              aria-label="Lecteur vidéo"
+              value={reader}
+              onChange={(e) => {
+                setReader(e.target.value);
+                setPlaying(null);
+              }}
+            >
+              <option value="auto">Premier lecteur disponible</option>
+              {[
+                ...new Map(
+                  (episodes.data?.episodes || [])
+                    .flatMap((e) => e.readers || [])
+                    .map((r) => [r.id, r]),
+                ).values(),
+              ].map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <a href={anime.sourceUrl} target="_blank" rel="noopener noreferrer">
+            Source : Anime-Sama ↗
+          </a>
+        </div>
+      )}
       {anime.slug.startsWith("mal-") && (
         <p className="local-notice">
           Le catalogue public fournit les informations et la liste des épisodes.
@@ -423,6 +522,9 @@ function AnimeDetail({ anime }) {
         <Suspense fallback={<Busy />}>
           <Player
             url={playing.url}
+            kind={playing.kind}
+            format={playing.format}
+            language={lang}
             anime={anime}
             season={season}
             episode={playing.ep.episode}
@@ -481,6 +583,7 @@ function LocalSettings() {
     getProvider().id === "compatible" ? getProvider().baseUrl : "",
   );
   const [message, setMessage] = useState("");
+  const [sourceMode, setSourceMode] = useState(getProvider().id);
   const save = () => {
     const blob = new Blob([JSON.stringify(exportLocalData(), null, 2)], {
         type: "application/json",
@@ -574,13 +677,17 @@ function LocalSettings() {
             e.preventDefault();
             try {
               saveProvider(
-                provider.trim()
-                  ? {
-                      id: "compatible",
-                      label: "Ma source publique",
-                      baseUrl: provider.trim(),
-                    }
-                  : null,
+                sourceMode === "anime-sama"
+                  ? null
+                  : sourceMode === "jikan"
+                    ? { id: "jikan" }
+                    : provider.trim()
+                      ? {
+                          id: "compatible",
+                          label: "Ma source publique",
+                          baseUrl: provider.trim(),
+                        }
+                      : null,
               );
               location.reload();
             } catch (error) {
@@ -588,12 +695,23 @@ function LocalSettings() {
             }
           }}
         >
-          <input
-            aria-label="API publique compatible"
-            placeholder="https://votre-source.example"
-            value={provider}
-            onChange={(e) => setProvider(e.target.value)}
-          />
+          <select
+            aria-label="Source du catalogue"
+            value={sourceMode}
+            onChange={(e) => setSourceMode(e.target.value)}
+          >
+            <option value="anime-sama">Anime-Sama</option>
+            <option value="jikan">Jikan / MyAnimeList (informations)</option>
+            <option value="compatible">Autre API publique</option>
+          </select>
+          {sourceMode === "compatible" && (
+            <input
+              aria-label="API publique compatible"
+              placeholder="https://votre-source.example"
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+            />
+          )}
           <button>Enregistrer la source</button>
         </form>
       </div>

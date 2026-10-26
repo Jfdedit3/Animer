@@ -1,0 +1,14 @@
+{
+  "default_animesama_catalogue": true,
+  "season_language_reader_choices": true,
+  "public_reader_mp4_decoded": true,
+  "relative_media_resolves_to_relay": true,
+  "resume_after_reload": true,
+  "manual_seen_in_vf": true,
+  "favorites_lists_persist": true,
+  "sandboxed_provider_fallback": true,
+  "no_auth_requests_or_account_tokens": true,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "limits": "Pages browser journey uses controlled relay fixtures and a generated MP4. Separate real-source checks validate the Frieren catalogue, season and reader list; no claim that every live host plays."
+}

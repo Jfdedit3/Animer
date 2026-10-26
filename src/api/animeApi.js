@@ -1,3 +1,4 @@
+import {asCatalogue,asAnime,asEpisodes} from '../local/animesama';
 import {publicCatalog,publicAnime,publicEpisodes} from '../local/catalog';
 import {getProvider} from '../providers/registry';
 import { canSendNartyaSession } from "@/providers/registry";
@@ -134,14 +135,15 @@ export async function searchCatalog({
 
 /** `{ slug: [romaji, anglais] }` pour le réglage « langue des titres ». */
 export async function getCatalogTitles() {
-  if(getProvider().id==='nartya')return {};
+  if(getProvider().id!=='compatible')return {};
   return (await get("/v1/anime/titles")).data || {};
 }
 
 /** [{ title, url, slug, image }] */
 export async function searchAnimes(query, limit = 20, media = "anime") {
   if (!query?.trim()) return [];
-  if(getProvider().id==='nartya')return (await publicCatalog(query)).items.slice(0,limit);
+  if(getProvider().id==='anime-sama')return (await asCatalogue(query)).items.slice(0,limit);
+  if(getProvider().id==='jikan')return (await publicCatalog(query)).items.slice(0,limit);
   const params = new URLSearchParams({ q: query, limit: String(limit) });
   return (await get(`/v1/${media === "manga" ? "manga" : "anime"}/search?${params.toString()}`)).data;
 }
@@ -161,6 +163,7 @@ export async function resolveAnilistToSlug(anilistId) {
 
 /** `lite` saute l'enrichissement côté serveur : `anilist` et `images` reviennent à null. */
 export async function getAnimePage(slug, { lite = false } = {}) {
+  if(slug.startsWith('as-')){const a=await asAnime(slug);return {anime:{...a,image:a.cover,synopsis:a.synopsis},anilist:null,images:{poster:a.cover},seasons:a.seasons};}
   if(slug.startsWith('mal-')){const a=await publicAnime(slug);return {anime:{...a,image:a.cover,synopsis:a.synopsis},anilist:null,images:{poster:a.cover},seasons:[{id:'saison1',name:'Saison 1'}]};}
   return (
     await get(`/v1/anime/${encodeURIComponent(slug)}${lite ? "?lite=1" : ""}`)
@@ -199,7 +202,7 @@ export function scanPageUrl(imageBase, oeuvre, chapter, page) {
 
 /** [{ number, seasonId, seasonName }], toutes saisons confondues. */
 export async function getAllEpisodes(slug) {
-  if(slug.startsWith('mal-'))return [];
+  if(slug.startsWith('mal-')||slug.startsWith('as-'))return [];
   return (await get(`/v1/anime/${encodeURIComponent(slug)}/episodes`)).data || [];
 }
 

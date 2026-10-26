@@ -14,5 +14,7 @@
   "shipped_fallback_on_public_api_503": true,
   "public_source_video_decoded": true,
   "video_resume_after_reload": true,
-  "video_resume_after_backup_import": true
+  "video_resume_after_backup_import": true,
+  "offline_shell": true,
+  "offline_bundled_catalogue": true
 }
