@@ -1,0 +1,11 @@
+node_modules
+dist/
+.env
+.env.*
+!.env.example
+.dev.vars
+.wrangler/
+verification/*.log
+verification/*.png
+*.tar.gz
+.DS_Store

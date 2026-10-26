@@ -1,0 +1,14 @@
+{
+  "email_login_through_sdk_mock_captcha": true,
+  "mobile_login_controls": true,
+  "mobile_search_and_year_filter": true,
+  "mobile_home_and_detail": true,
+  "episodes_and_source_resolution": true,
+  "actual_mp4_decode_and_playback": true,
+  "authorization_to_relay": true,
+  "no_session_to_anilist": true,
+  "desktop_and_mobile_layout": true,
+  "horizontal_overflow": false,
+  "page_errors": [],
+  "validation": "Controlled API/account fixtures and generated test video. No real Nartya login or episode used."
+}

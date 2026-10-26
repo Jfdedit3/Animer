@@ -1,0 +1,9 @@
+name = "animer"
+main = "dist/server/index.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+UPSTREAM_API_URL = "https://anime.nartya.app"
+
+# Before first deployment: wrangler secret put STREAM_SIGNING_KEY
+# Value: a cryptographically random 32-byte key, base64 encoded.
