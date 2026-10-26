@@ -1,0 +1,13 @@
+{
+  "site": "https://jfdedit3.github.io/Animer/",
+  "relay": "https://animer-web-jfdedit3.wittycharm129.chatgpt.site",
+  "public_access_authorized": true,
+  "hosting_access_mode": "public",
+  "anonymous_api_catalogue": true,
+  "anonymous_api_episode_count": 28,
+  "cors_origin": "https://jfdedit3.github.io",
+  "live_browser_catalogue_and_episode_page": true,
+  "live_browser_hls_playback_time_advanced": true,
+  "browser_page_errors": [],
+  "limits": "Fresh browser context without account headers or fixture routes; validated Frieren S1 E1 reader 1 only. Other providers can refuse server playback."
+}

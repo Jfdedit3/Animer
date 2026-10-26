@@ -21,7 +21,7 @@ Le relais expose `/api/animesama/catalog`, `/api/animesama/anime/:slug`, `/api/a
 
 En cas de refus ou de lecteur non reconnu, le lecteur public d’origine est proposé dans une iframe protégée. Certains fournisseurs peuvent refuser leur intégration : choisissez alors un autre lecteur. La progression d’une iframe ne peut pas être mesurée ; marquez l’épisode vu manuellement.
 
-La version Pages utilise par défaut le relais préparé à `https://animer-web-jfdedit3.wittycharm129.chatgpt.site`. Son audience Sites est conservée tant que le propriétaire n’autorise pas son passage public. **Tant que ce relais reste privé, les appels depuis Pages sans connexion sont bloqués** : une sélection Anime-Sama datée, incluse dans le build, est affichée à sa place, avec un message explicite. Cette sélection ne simule pas la disponibilité de toutes les fiches et des vidéos.
+La version Pages utilise par défaut le relais public `https://animer-web-jfdedit3.wittycharm129.chatgpt.site`, accessible sans connexion avec l’accord du propriétaire. Le catalogue, les fiches, les épisodes et la lecture HLS du premier lecteur de Frieren ont été vérifiés depuis GitHub Pages dans un navigateur sans session. Une sélection Anime-Sama datée, incluse dans le build, reste disponible si le relais est indisponible ; elle est signalée comme sélection enregistrée.
 
 Pour utiliser un autre hébergement serveur, déployer `npm run build` avec le Worker `dist/server/index.js` (ou `npm run preview` derrière HTTPS). Configurer `STREAM_SIGNING_KEY` côté serveur avec 32 octets aléatoires encodés en base64, et `ALLOWED_WEB_ORIGINS=https://jfdedit3.github.io`. La clé reste uniquement côté serveur. Configurer ensuite la variable de dépôt GitHub `ANIMER_RELAY_URL` avec l’origine HTTPS du relais, sans secret, puis relancer le workflow Pages.
 
@@ -63,6 +63,6 @@ Le service worker met en cache la coque et les ressources. Il met aussi en cache
 
 ## Origine et licence
 
-Interface et composants de bibliothèque dérivés du client public [Nartya](https://github.com/NartyaTeam/nartya), licence ISC. Le client Android d’origine n’est pas modifié. Le relais Sites conserve son audience actuelle jusqu’à autorisation explicite de son passage public.
+Interface et composants de bibliothèque dérivés du client public [Nartya](https://github.com/NartyaTeam/nartya), licence ISC. Le client Android d’origine n’est pas modifié. Le relais Sites est accessible publiquement avec l’accord du propriétaire.
 
 [LICENSE](LICENSE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
