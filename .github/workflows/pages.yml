@@ -26,7 +26,6 @@ jobs:
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
           VITE_RELAY_URL: ${{ vars.ANIMER_RELAY_URL }}
-          VITE_TURNSTILE_SITEKEY: ${{ vars.ANIMER_TURNSTILE_SITEKEY }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/pages

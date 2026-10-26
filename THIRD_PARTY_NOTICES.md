@@ -7,3 +7,7 @@ Les bibliothèques React, React Router, Zustand, Artplayer, hls.js, Supabase, Lu
 Les logos, données, comptes, serveurs et contenus proposés par Nartya ne sont pas la propriété de ce projet. Animer n’est pas un service officiel Nartya. Les configurations publiques de connexion ne confèrent aucun droit d’administration ou d’accès supplémentaire.
 
 Aucun code de Nartya FM PC n’est utilisé dans ce projet Anime.
+
+## Public fallback catalogue
+
+`public/data/catalog.json` is a derived subset of [anime-offline-database](https://github.com/manami-project/anime-offline-database), release `2026-27` (last update 2026-07-04), by manami-project. The source is available from that project's releases. The subset contains up to 500 TV/film records with an aggregate score of at least 8 and excludes several adult content tags; this is not a content-rating guarantee. Fields are reduced and titles, image URLs, identifiers, episode counts and aggregate scores are retained. This derived database is available under **Open Database License 1.0**; individual database contents under **Database Contents License 1.0**. Full license text is shipped in `public/data/LICENSE.txt`. The transformation is supplied in `scripts/build-public-snapshot.py`. Remote cover images remain the property of their respective rights holders.

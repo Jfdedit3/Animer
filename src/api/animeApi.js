@@ -1,3 +1,5 @@
+import {publicCatalog,publicAnime,publicEpisodes} from '../local/catalog';
+import {getProvider} from '../providers/registry';
 import { canSendNartyaSession } from "@/providers/registry";
 import {apiErrorMessage} from "@/utils/apiErrors";
 import { getApiBaseUrl, API_CONFIG } from "@/config/config";
@@ -132,12 +134,14 @@ export async function searchCatalog({
 
 /** `{ slug: [romaji, anglais] }` pour le réglage « langue des titres ». */
 export async function getCatalogTitles() {
+  if(getProvider().id==='nartya')return {};
   return (await get("/v1/anime/titles")).data || {};
 }
 
 /** [{ title, url, slug, image }] */
 export async function searchAnimes(query, limit = 20, media = "anime") {
   if (!query?.trim()) return [];
+  if(getProvider().id==='nartya')return (await publicCatalog(query)).items.slice(0,limit);
   const params = new URLSearchParams({ q: query, limit: String(limit) });
   return (await get(`/v1/${media === "manga" ? "manga" : "anime"}/search?${params.toString()}`)).data;
 }
@@ -157,6 +161,7 @@ export async function resolveAnilistToSlug(anilistId) {
 
 /** `lite` saute l'enrichissement côté serveur : `anilist` et `images` reviennent à null. */
 export async function getAnimePage(slug, { lite = false } = {}) {
+  if(slug.startsWith('mal-')){const a=await publicAnime(slug);return {anime:{...a,image:a.cover,synopsis:a.synopsis},anilist:null,images:{poster:a.cover},seasons:[{id:'saison1',name:'Saison 1'}]};}
   return (
     await get(`/v1/anime/${encodeURIComponent(slug)}${lite ? "?lite=1" : ""}`)
   ).data;
@@ -194,6 +199,7 @@ export function scanPageUrl(imageBase, oeuvre, chapter, page) {
 
 /** [{ number, seasonId, seasonName }], toutes saisons confondues. */
 export async function getAllEpisodes(slug) {
+  if(slug.startsWith('mal-'))return [];
   return (await get(`/v1/anime/${encodeURIComponent(slug)}/episodes`)).data || [];
 }
 
@@ -204,6 +210,7 @@ export async function getAllEpisodes(slug) {
  * seasonName:string}>}
  */
 export async function getSeasonEpisodes(slug, seasonId, { lite = false } = {}) {
+  if(slug.startsWith('mal-'))return {...await publicEpisodes(slug),seasonName:'Saison 1'};
   const data = (
     await get(
       `/v1/anime/${encodeURIComponent(slug)}/seasons/${encodeURIComponent(

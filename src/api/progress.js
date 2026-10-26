@@ -136,7 +136,7 @@ export const COMPLETION_THRESHOLD = 90;
 export async function getEpisodeProgress(slug, seasonId, episodeNumber, language, userId) {
   const key = episodeKey(slug, seasonId, episodeNumber, language);
   const local=readCheckpoint(`${providerCacheNamespace()}:${userId||"local"}`,key);
-  if(!userId || getProvider().id!=="nartya")return local;
+  if(!userId)return local;
   const { data, error } = await supabase
     .from("episode_progress")
     .select("position_seconds, duration, progress_percent, completed, updated_at")
@@ -167,7 +167,7 @@ export async function saveEpisodeProgress({
   userId,
 }) {
   writeCheckpoint(`${providerCacheNamespace()}:${userId||"local"}`,episodeKey(slug,seasonId,episodeNumber,language),checkpointValue(positionSeconds,duration));
-  if (!userId || isGuestSession() || getProvider().id!=="nartya") return;
+  if (!userId || isGuestSession()) return;
 
   const pct = duration > 0 ? Math.min((positionSeconds / duration) * 100, 100) : 0;
   const completed = pct >= COMPLETION_THRESHOLD;
@@ -191,7 +191,7 @@ export async function saveEpisodeProgress({
     },
     { onConflict: "user_id,episode_key" }
   );
-  if (error) console.warn("[progress] save échouée:", error.message);
+  if (error) throw error;
   else {
     expireProfileProgress(userId);
     invalidateResumeCache();
@@ -229,7 +229,7 @@ export async function markEpisodeWatched({ slug, seasonId, episodeNumber, langua
     },
     { onConflict: "user_id,episode_key" }
   );
-  if (error) console.warn("[progress] mark vu échoué:", error.message);
+  if (error) throw error;
   else {
     expireProfileProgress(userId);
     invalidateResumeCache();
@@ -290,7 +290,7 @@ export async function unmarkEpisodeWatched({ slug, seasonId, episodeNumber }) {
     .eq("anime_slug", slug)
     .eq("season_id", String(seasonId))
     .eq("episode_number", episodeNumber);
-  if (error) console.warn("[progress] mark non-vu échoué:", error.message);
+  if (error) throw error;
   else {
     expireProfileProgress();
     invalidateResumeCache();

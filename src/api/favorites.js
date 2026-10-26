@@ -59,7 +59,7 @@ export async function addFavorite({ slug, title, cover, genre, mediaType }) {
   );
   if (error) throw error;
   invalidateFavoriteProfileData();
-  if (!genre) backfillFavoriteGenre(slug);
+  // Genre metadata is optional; local saves never trigger an account API request.
 }
 
 async function backfillFavoriteGenre(slug) {

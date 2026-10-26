@@ -1,0 +1,18 @@
+{
+  "anonymous_home": true,
+  "no_auth_or_nartya_requests": true,
+  "favorite_persists_after_reload": true,
+  "list_persists_after_reload": true,
+  "watched_episode_persists_after_reload": true,
+  "history_visible": true,
+  "export_import_round_trip": true,
+  "preferences_persist": true,
+  "legacy_login_redirects_home": true,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "limits": "Public catalogue API mocked; no protected stream used.",
+  "shipped_fallback_on_public_api_503": true,
+  "public_source_video_decoded": true,
+  "video_resume_after_reload": true,
+  "video_resume_after_backup_import": true
+}
