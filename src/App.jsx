@@ -1,5 +1,5 @@
 import { asCatalogue, asAnime, asEpisodes, asStream } from "./local/animesama";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   Routes,
   Route,
@@ -278,7 +278,20 @@ function AnimeDetail({ anime }) {
     [lang, setLang] = useState(anime.seasons?.[0]?.languages?.[0] || "vostfr"),
     [reader, setReader] = useState("auto"),
     [viewed, setViewed] = useState({}),
-    [playing, setPlaying] = useState(null);
+    [playing, setPlaying] = useState(null),
+    [resolving, setResolving] = useState(false);
+  const playRequest = useRef(0);
+  useEffect(
+    () => () => {
+      playRequest.current++;
+    },
+    [],
+  );
+  const stopPlayback = () => {
+    playRequest.current++;
+    setResolving(false);
+    setPlaying(null);
+  };
   const episodes = useResource(
     () =>
       anime.slug.startsWith("as-")
@@ -321,17 +334,30 @@ function AnimeDetail({ anime }) {
       toast.error("La sauvegarde locale a échoué.");
     }
   };
-  const play = async (ep) => {
+  const play = async (
+    ep,
+    { selectedReader = reader, selectedLanguage = lang } = {},
+  ) => {
+    const requestId = ++playRequest.current;
+    setPlaying(null);
+    setResolving(true);
     try {
       if (anime.slug.startsWith("as-")) {
         const data = await asStream({
           slug: anime.slug,
           season,
-          lang,
+          lang: selectedLanguage,
           episode: ep.episode,
-          reader,
+          reader: selectedReader,
         });
-        setPlaying({ ...data, ep });
+        if (requestId !== playRequest.current) return;
+        setPlaying({
+          ...data,
+          ep,
+          season,
+          language: selectedLanguage,
+          selectedReader,
+        });
         return;
       }
       const entries = Object.values(
@@ -346,15 +372,55 @@ function AnimeDetail({ anime }) {
         "/v1/streams/" + encodeURIComponent(first.id),
       );
       const url = safeProviderUrl(data.url, { appOrigin: location.origin });
+      if (requestId !== playRequest.current) return;
       setPlaying({
         url,
         ep,
+        season,
+        language: selectedLanguage,
+        selectedReader,
         kind: /\.(mp4|webm|m3u8)(?:[?#]|$)/i.test(url) ? "video" : "embed",
       });
     } catch (e) {
-      toast.error(e.message);
+      if (requestId === playRequest.current) toast.error(e.message);
+    } finally {
+      if (requestId === playRequest.current) setResolving(false);
     }
   };
+  const changeReader = (value) => {
+    const current = playing?.ep;
+    setReader(value);
+    stopPlayback();
+    if (current) void play(current, { selectedReader: value });
+  };
+  const changeLanguage = (value) => {
+    const current = playing?.ep;
+    setLang(value);
+    setReader("auto");
+    stopPlayback();
+    if (current)
+      void play(current, { selectedReader: "auto", selectedLanguage: value });
+  };
+  const episodeItems = episodes.data?.episodes || [];
+  const playingIndex = playing
+    ? episodeItems.findIndex((e) => e.episode === playing.ep.episode)
+    : -1;
+  const readerOptions = [
+    { id: "auto", label: "Automatique" },
+    ...[
+      ...new Map(
+        episodeItems.flatMap((e) => e.readers || []).map((r) => [r.id, r]),
+      ).values(),
+    ],
+  ];
+  const languageOptions = [
+    ...new Set([
+      lang,
+      ...(episodes.data?.languages ||
+        anime.seasons?.find((s) => s.id === season)?.languages ||
+        []),
+    ]),
+  ];
   return (
     <article className="local-detail">
       <Link to="/" className="local-back">
@@ -441,7 +507,7 @@ function AnimeDetail({ anime }) {
                 anime.seasons?.find((s) => s.id === e.target.value)
                   ?.languages?.[0] || "vostfr",
               );
-              setPlaying(null);
+              stopPlayback();
               setReader("auto");
               setPage(1);
             }}
@@ -461,11 +527,7 @@ function AnimeDetail({ anime }) {
             <select
               aria-label="Langue des épisodes"
               value={lang}
-              onChange={(e) => {
-                setLang(e.target.value);
-                setPlaying(null);
-                setReader("auto");
-              }}
+              onChange={(e) => changeLanguage(e.target.value)}
             >
               {[
                 ...new Set([
@@ -486,10 +548,7 @@ function AnimeDetail({ anime }) {
             <select
               aria-label="Lecteur vidéo"
               value={reader}
-              onChange={(e) => {
-                setReader(e.target.value);
-                setPlaying(null);
-              }}
+              onChange={(e) => changeReader(e.target.value)}
             >
               <option value="auto">Premier lecteur disponible</option>
               {[
@@ -518,17 +577,33 @@ function AnimeDetail({ anime }) {
           réglages.
         </p>
       )}
+      {resolving && (
+        <p className="local-player-loading" role="status">
+          Chargement du lecteur…
+        </p>
+      )}
       {playing && (
         <Suspense fallback={<Busy />}>
           <Player
             url={playing.url}
             kind={playing.kind}
             format={playing.format}
-            language={lang}
+            language={playing.language}
+            languages={languageOptions}
+            sources={readerOptions}
+            sourceId={playing.selectedReader}
+            onSourceChange={changeReader}
+            onLanguageChange={changeLanguage}
+            hasPrev={playingIndex > 0}
+            hasNext={
+              playingIndex >= 0 && playingIndex < episodeItems.length - 1
+            }
+            onPrev={() => void play(episodeItems[playingIndex - 1])}
+            onNext={() => void play(episodeItems[playingIndex + 1])}
             anime={anime}
-            season={season}
+            season={playing.season}
             episode={playing.ep.episode}
-            onClose={() => setPlaying(null)}
+            onClose={stopPlayback}
           />
         </Suspense>
       )}
@@ -546,7 +621,9 @@ function AnimeDetail({ anime }) {
                   {ep.title || "Épisode " + ep.episode}
                 </span>
                 {!anime.slug.startsWith("mal-") && (
-                  <button onClick={() => play(ep)}>Lire</button>
+                  <button disabled={resolving} onClick={() => play(ep)}>
+                    Lire
+                  </button>
                 )}
                 <button
                   aria-label={"Épisode " + ep.episode + " vu"}

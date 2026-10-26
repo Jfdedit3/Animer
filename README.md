@@ -36,7 +36,7 @@ Une API publique compatible peut être configurée dans Réglages. Elle doit acc
 - `/v1/anime/:slug/seasons/:season/episodes` : `{episodes:[{episode,title,lecteurs:{vostfr:{source:{id}}}}]}` ;
 - `/v1/streams/:id` : `{url}` avec une vidéo ou un lecteur public HTTPS autorisé.
 
-Les URL MP4/WebM/HLS utilisent un lecteur avec reprise locale et sauvegarde toutes les cinq secondes, à la pause et à la fermeture. Les lecteurs tiers sont intégrés dans une iframe protégée : leur progression ne peut pas être mesurée, et l’épisode se marque vu manuellement. Certains fournisseurs refusent les iframes ou les accès vidéo CORS. Aucun accès protégé n’est contourné. Le filtre Anime4K du client natif n’est pas proposé dans ce lecteur web local.
+Les flux MP4/WebM/HLS utilisent le **lecteur Nartya existant (Artplayer)** : contrôles personnalisés en français, sauts et raccourcis, vitesse, volume/boost audio, qualité HLS automatique ou manuelle, plein écran et PiP selon le navigateur. Ses menus permettent de changer la langue et le lecteur Anime-Sama. Navigation entre épisodes, reprise locale et sauvegarde toutes les cinq secondes, à la pause, au changement de visibilité et à la fermeture. Les lecteurs tiers sont intégrés dans une iframe protégée : leur progression ne peut pas être mesurée, et l’épisode se marque vu manuellement. Certains fournisseurs refusent les iframes ou les accès vidéo CORS. Aucun accès protégé n’est contourné. Le réglage Anime4K du lecteur Nartya est conservé lorsque le navigateur et le GPU le permettent ; il reste désactivé par défaut. Aucune compatibilité GPU physique ni PiP n’est garantie par les tests navigateur.
 
 ## Développement
 

@@ -1,0 +1,15 @@
+{
+  "actual_nartya_artplayer_component": true,
+  "mp4_video_decoded": true,
+  "local_resume_after_reload": true,
+  "hls_without_extension_uses_explicit_format": true,
+  "quality_menu_selection_persists": true,
+  "source_menu_switches_reader": true,
+  "language_menu_switches_language": true,
+  "next_episode_controls": true,
+  "stale_resolution_cannot_reopen_closed_player": true,
+  "provider_iframe_fallback": true,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "limits": "Local Pages artifact, controlled relay responses and generated MP4/HLS fixtures. Physical-device GPU/Anime4K and PiP are not validated."
+}

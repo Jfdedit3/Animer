@@ -2,6 +2,7 @@ import {allowsAnime4k,isMobileAnime4kMode} from "@/utils/anime4kPolicy";
 import {setupTouchLock} from "@/utils/playerLock";
 import { useEffect, useRef, useState } from "react";
 import Artplayer from "artplayer";
+import french from "artplayer/i18n/fr";
 import Hls from "hls.js";
 import {
   createFastStartHlsInstance,
@@ -45,6 +46,8 @@ const SEEK_STEP_S = 10;
  */
 export default function VideoPlayer({
   videoUrl,
+  mediaFormat = null,
+  sourceControls = null,
   mediaKey = null,
   title = "",
   poster = "",
@@ -177,6 +180,7 @@ export default function VideoPlayer({
       autoPlayback: false,
       theme: "rgb(var(--primary))", // suit la couleur de l'app
       lang: "fr",
+      i18n: {fr: {...french,"Video Load Failed":"Chargement de la vidéo impossible"}},
       moreVideoAttr: { crossOrigin: "anonymous" },
       controls: [
         {
@@ -605,7 +609,7 @@ export default function VideoPlayer({
       }
     };
 
-    if (isHlsUrl(videoUrl) && Hls.isSupported()) {
+    if ((mediaFormat === "hls" || isHlsUrl(videoUrl)) && Hls.isSupported()) {
       art.pause();
       art._decodeStop?.();
       art._decodeStop = null;
@@ -728,7 +732,7 @@ export default function VideoPlayer({
       video.addEventListener("loadedmetadata", onLoaded, { once: true });
       Promise.resolve(art.switchUrl(videoUrl, title)).catch((e) => cb.current.onError?.(e));
     }
-  }, [videoUrl, title, effectiveMediaKey]);
+  }, [videoUrl, title, effectiveMediaKey, mediaFormat]);
 
   // Certains masters marquent toutes leurs pistes DEFAULT=NO, et la première n'est pas forcément
   // la bonne langue.
@@ -770,7 +774,7 @@ export default function VideoPlayer({
     if (!art?.setting) return;
     try {
       const option =
-        sources.length > 1 && advancedPlayerControls
+        sources.length > 1 && (sourceControls ?? advancedPlayerControls)
           ? sourceSettingOption({
               sources,
               sourceId,
@@ -781,7 +785,7 @@ export default function VideoPlayer({
     } catch (e) {
       console.warn("[player] menu Source non mis à jour :", e);
     }
-  }, [sources, sourceId, advancedPlayerControls]);
+  }, [sources, sourceId, advancedPlayerControls, sourceControls]);
 
   return (
     <>

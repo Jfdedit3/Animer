@@ -19,5 +19,5 @@ export default defineConfig(({mode})=>{
  plugins:[react(),...(pages?[pagesFiles(base)]:[])],base,resolve:{alias:{'@':path.resolve('src')}},
  build:{outDir:pages?'dist/pages':'dist/client',emptyOutDir:true,chunkSizeWarningLimit:800,rollupOptions:{output:{manualChunks:{'vendor-react':['react','react-dom','react-router-dom'],'vendor-player':['artplayer','hls.js'],}}}},
  server:{host:'127.0.0.1',port:5175,strictPort:true,proxy:{'/api':{target:'http://127.0.0.1:8788'},'/auth/callback':{target:'http://127.0.0.1:5175',rewrite:()=>'/index.html'}}},
- define:{__ANIMER_BUILD__:JSON.stringify(env.VITE_APP_VERSION||process.env.npm_package_version||'1.3.0')},
+ define:{__ANIMER_BUILD__:JSON.stringify(env.VITE_APP_VERSION||process.env.npm_package_version||'1.4.0')},
 };});
