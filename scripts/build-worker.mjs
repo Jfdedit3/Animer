@@ -6,5 +6,5 @@ async function walk(dir){for(const item of await readdir(dir,{withFileTypes:true
 await walk(root);await mkdir('dist/server',{recursive:true});
 await build({entryPoints:['worker/index.js'],outfile:'dist/server/index.js',bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true,define:{__ANIMER_ASSETS__:JSON.stringify(assets)}});
 await mkdir('dist/.openai',{recursive:true});await copyFile('.openai/hosting.json','dist/.openai/hosting.json');
-await writeFile('dist/build-info.json',JSON.stringify({app:'Animer',version:'1.0.0',files:Object.keys(assets).length,worker:'server/index.js',static:'client'},null,2));
+await writeFile('dist/build-info.json',JSON.stringify({app:'Animer',version:JSON.parse(await readFile('package.json','utf8')).version,files:Object.keys(assets).length,worker:'server/index.js',static:'client'},null,2));
 console.log(`Animer: ${Object.keys(assets).length} assets bundled with the web relay.`);

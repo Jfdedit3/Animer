@@ -31,7 +31,7 @@ Le build crée les ressources web dans `dist/client/` et un Worker ESM autonome 
 
 Pour utiliser le compte Nartya sur un nouveau domaine, l’équipe Nartya doit autoriser :
 
-- l’URL `https://VOTRE-DOMAINE/auth/callback` dans les redirections Supabase ;
+- l’URL `https://VOTRE-DOMAINE/BASE/auth/callback/` (sans `BASE/` pour un site à la racine) dans les redirections Supabase ;
 - le domaine dans Cloudflare Turnstile, ou fournir une clé publique de captcha autorisée pour ce domaine (`VITE_TURNSTILE_SITEKEY`) ;
 - l’accès du client aux services concernés, selon leurs règles.
 
@@ -62,9 +62,45 @@ Certains hébergeurs peuvent refuser les adresses IP de datacenter, lier un flux
 
 ## Déployer
 
+### GitHub Pages
+
+Le dépôt contient désormais un build **statique dédié** et le workflow `.github/workflows/pages.yml`. Les ressources, la PWA et le retour OAuth utilisent le préfixe `/Animer/`.
+
+1. Dans [Settings → Pages](https://github.com/Jfdedit3/Animer/settings/pages), sélectionner **GitHub Actions** comme source.
+2. Dans Actions, lancer **Publier sur GitHub Pages** ; les prochains pushes sur `main` relancent le déploiement.
+
+Pages est activé avec la source GitHub Actions sur ce dépôt. Sur une copie du dépôt, si l’activation automatique retourne `403 Resource not accessible by integration`, le propriétaire doit effectuer le premier réglage dans Settings → Pages.
+
+Adresse de publication : **https://jfdedit3.github.io/Animer/**. La page de retour de connexion réellement générée est :
+
+```text
+https://jfdedit3.github.io/Animer/auth/callback/
+```
+
+Cette adresse doit être ajoutée aux redirections autorisées du projet Supabase Nartya, et `jfdedit3.github.io` aux domaines du captcha Turnstile. Le site conserve le vérificateur PKCE dans le navigateur ; une redirection seule ne remplace pas l’autorisation du domaine par Nartya. Le code d’authentification est retiré de la barre d’adresse après réception. La confirmation par e-mail utilise aussi cette adresse.
+
+```sh
+npm run build:pages
+# Ressources statiques : dist/pages/
+```
+
+Le build inclut `auth/callback/index.html`, un manifeste dont le scope est `/Animer/`, un service worker limité à ce projet et `.nojekyll`. Il n’utilise pas de route serveur pour le retour OAuth.
+
+Sans relais, la version Pages interroge directement l’API Nartya avec le compte autorisé. Le préflight de l’API a été vérifié : elle accepte l’origine `https://jfdedit3.github.io`. La lecture utilise le lecteur du fournisseur dans une iframe protégée lorsque l’API l’autorise, ou une URL vidéo directe lorsqu’elle est fournie. Certains fournisseurs refusent les iframes ; une autre source peut être nécessaire. Le suivi automatique du temps, Anime4K et les contrôles avancés du lecteur Animer ne sont pas disponibles dans une iframe tierce.
+
+Pour retrouver le lecteur Animer complet, déployer le relais sur un hébergement serveur public et configurer :
+
+- la variable **de dépôt** GitHub `ANIMER_RELAY_URL` avec son adresse HTTPS (sans jeton ni clé) ;
+- `ALLOWED_WEB_ORIGINS=https://jfdedit3.github.io` dans l’environnement **du relais** ;
+- éventuellement la variable publique de dépôt `ANIMER_TURNSTILE_SITEKEY` avec une clé de captcha autorisée.
+
+La publication Sites antérieure est privée et n’est pas utilisée comme relais public par GitHub Pages. Aucune clé d’accès à cette publication n’est embarquée dans le site.
+
+### Hébergement avec relais
+
 Le dépôt contient `wrangler.toml` pour Cloudflare Workers. Installez/utilisez le CLI Wrangler dans votre environnement authentifié, configurez `STREAM_SIGNING_KEY` avec `wrangler secret put STREAM_SIGNING_KEY`, puis lancez `npm run deploy:cloudflare`.
 
-Un hébergement purement statique comme GitHub Pages ne suffit pas au relais vidéo. Pour un autre serveur, `npm run build` puis `npm run preview` lance l’ensemble sur le port `PORT` (8788 par défaut) ; placez-le derrière HTTPS et un reverse proxy. Le serveur local écoute sur le loopback.
+GitHub Pages ne peut pas exécuter le relais vidéo ; son build dédié propose le lecteur du fournisseur. Pour un autre serveur, `npm run build` puis `npm run preview` lance l’ensemble sur le port `PORT` (8788 par défaut) ; placez-le derrière HTTPS et un reverse proxy. Le serveur local écoute sur le loopback.
 
 La configuration `.openai/hosting.json` identifie aussi la publication Sites créée pendant ce travail. Elle ne contient aucun secret. La publication Sites commence en accès privé et ne change pas l’accès du dépôt GitHub public.
 

@@ -1,4 +1,5 @@
 /** Provider selection is local. A Nartya session is never forwarded to another origin. */
+import {permitsSession} from '../web/urls.js';
 export const PROVIDER_STORAGE_KEY = "yoru:provider:v1";
 export const NARTYA_BASE = "https://anime.nartya.app";
 export function normalizeProvider(value) {
@@ -17,6 +18,6 @@ export function saveProvider(value) {
   return provider;
 }
 export function canSendNartyaSession(apiBaseUrl) {
-  try { return new URL(apiBaseUrl).origin === NARTYA_BASE; } catch { return apiBaseUrl === "/api" && getProvider().id === "nartya"; }
+  return permitsSession(apiBaseUrl,{providerId:getProvider().id,relay:import.meta.env?.VITE_RELAY_URL||'',nartya:NARTYA_BASE});
 }
 export function providerCacheNamespace() { return encodeURIComponent(getProvider().baseUrl); }

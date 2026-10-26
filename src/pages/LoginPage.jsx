@@ -32,6 +32,7 @@ function MarqueeRow({ covers, reverse, duration }) {
 
 export default function LoginPage() {
   const session = useAuthStore((s) => s.session);
+  const callbackError=useAuthStore((s)=>s.authCallbackError);
   const signInWithDiscord = useAuthStore((s) => s.signInWithDiscord);
   const signInWithEmail = useAuthStore((s) => s.signInWithEmail);
   const signUpWithEmail = useAuthStore((s) => s.signUpWithEmail);
@@ -56,7 +57,7 @@ export default function LoginPage() {
   const submitEmail = async (e) => {
     e.preventDefault();
     if (busy) return;
-    setError("");
+    setError("");useAuthStore.setState({authCallbackError:null});
     setNotice("");
     if (!email.trim() || password.length < 6) {
       setError("Renseigne un email et un mot de passe d'au moins 6 caractères.");
@@ -82,7 +83,7 @@ export default function LoginPage() {
 
   const onGuest = async () => {
     if (busy) return;
-    setError("");
+    setError("");useAuthStore.setState({authCallbackError:null});
     if(getProvider().id!=="nartya"){navigate("/");return;}
     setBusy("guest");
     try {
@@ -100,7 +101,7 @@ export default function LoginPage() {
 
   const onDiscord = async () => {
     if (busy) return;
-    setError("");
+    setError("");useAuthStore.setState({authCallbackError:null});
     if(getProvider().id!=="nartya"){setError("Sélectionnez Nartya dans Fournisseurs pour utiliser Discord.");return;}
     setBusy("discord");
     try {
@@ -198,7 +199,7 @@ export default function LoginPage() {
               </button>
             </label>
 
-            {error && <p className="text-xs leading-relaxed text-primary">{error}</p>}
+            {(error||callbackError) && <p role="alert" className="text-xs leading-relaxed text-primary">{error||callbackError}</p>}
             {notice && <p className="text-xs leading-relaxed text-accent">{notice}</p>}
 
             <button
@@ -217,7 +218,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => {
                 setMode((m) => (m === "signup" ? "signin" : "signup"));
-                setError("");
+                setError("");useAuthStore.setState({authCallbackError:null});
                 setNotice("");
               }}
               className="font-semibold text-text underline decoration-dotted underline-offset-2 transition-colors hover:text-primary"

@@ -1,5 +1,6 @@
 import { getProvider } from "@/providers/registry";
 import { API_URL } from "@/config/instance";
+import {defaultApiBase} from './webHosting.js';
 /** /api en dev (proxy Vite), l'URL de prod une fois packagé. */
 
 export const API_CONFIG = {
@@ -10,7 +11,7 @@ export const API_CONFIG = {
 
 export function getApiBaseUrl() {
   const provider=getProvider();
-  return provider.id==='nartya'?'/api':provider.baseUrl;
+  return provider.id==='nartya'?defaultApiBase():provider.baseUrl;
 }
 
 /** Pour le processus principal, où « /api » ne se résout pas. */

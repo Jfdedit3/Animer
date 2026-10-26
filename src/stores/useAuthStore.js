@@ -71,6 +71,7 @@ export const useAuthStore = create((set, get) => ({
   session: null,
   user: null,
   loading: true,
+  authCallbackError: null,
   _avatarRefreshTried: false, // une tentative par session
   _recoveringSession: false, // anti-boucle de la re-synchro depuis le fichier partagé
   _refresherStarted: false,
@@ -432,6 +433,7 @@ export const useAuthStore = create((set, get) => ({
 
     const captchaToken = await getCaptchaToken();
     const options = {};
+    options.emailRedirectTo=await platform.getAuthRedirectUrl({kind:'email'});
     if (name) options.data = { full_name: name };
     if (captchaToken) options.captchaToken = captchaToken;
 
@@ -447,6 +449,7 @@ export const useAuthStore = create((set, get) => ({
   isGuest: () => classifySession(get().session) === "guest",
 
   handleAuthCallback: async (callbackUrl) => {
+    set({authCallbackError:null});
     const completingReauth = sessionStorage.getItem("nartya-discord-reauth-pending") === "1";
     sessionStorage.removeItem("nartya-discord-reauth-pending");
     try {
@@ -458,6 +461,7 @@ export const useAuthStore = create((set, get) => ({
         url.searchParams.get("error_code") ||
         url.searchParams.get("error");
       if (oauthError) {
+        set({authCallbackError:"L’autorisation de connexion a été refusée ou annulée. Vous pouvez réessayer."});
         if (completingReauth) set({ discordReauthError: readableOAuthError(oauthError) });
         if (completingDiscordLink) {
           sessionStorage.removeItem("nartya-discord-link-pending");
@@ -473,6 +477,7 @@ export const useAuthStore = create((set, get) => ({
       if (!code) return;
       const { data: exchanged, error } = await supabase.auth.exchangeCodeForSession(code);
       if (error) {
+        set({authCallbackError:"La connexion n’a pas pu être finalisée. Réessayez et vérifiez que cette adresse de retour est autorisée par Nartya."});
         console.error("[auth] exchangeCodeForSession:", error.message);
         if (completingReauth) set({ discordReauthError: readableOAuthError(error.message) });
         if (completingDiscordLink) {

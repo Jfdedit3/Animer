@@ -7,7 +7,7 @@ const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:
 const error=(message,status=502)=>json({success:false,error:message},status);
 function authHeaders(request){const value=request.headers.get('Authorization');return value&&/^Bearer [\w.\-]+$/.test(value)?{Authorization:value}:{};}
 function upstreamBase(env){const u=publicHttps(env.UPSTREAM_API_URL||DEFAULT_UPSTREAM);return u.href.replace(/\/$/,'');}
-function sameOrigin(request){const origin=request.headers.get('Origin');return !origin||origin===new URL(request.url).origin;}
+function sameOrigin(request,env={}){const origin=request.headers.get('Origin');return !origin||origin===new URL(request.url).origin||(env.ALLOWED_WEB_ORIGINS||'').split(',').map(x=>x.trim()).includes(origin);}
 export function mediaHeaders(payload,range){
  const headers={'Accept-Encoding':'identity'};
  if(payload.transport?.userAgent)headers['User-Agent']=payload.transport.userAgent;
@@ -42,7 +42,7 @@ export async function rewritePlaylist(text,base,payload,secret){
 
 async function resolve(request,env,fetcher){
  if(request.method!=='POST')return error('Méthode non autorisée.',405);
- if(!sameOrigin(request))return error('Origine non autorisée.',403);
+ if(!sameOrigin(request,env))return error('Origine non autorisée.',403);
  if(Number(request.headers.get('Content-Length'))>20000)return error('Requête trop volumineuse.',413);
  let body;try{const text=await boundedText(request,20000);if(text.length>20000)return error('Requête trop volumineuse.',413);body=JSON.parse(text);}catch{return error('Requête invalide.',400);}
  if(typeof body.token!=='string'||!body.token||body.token.length>12000)return error('Jeton de source invalide.',400);
@@ -93,7 +93,7 @@ async function media(request,env,fetcher){
  return new Response(request.method==='HEAD'?null:response.body,{status:response.status,headers:out});
 }
 
-export async function handleApi(request,env={},fetcher=fetch){
+async function routeApi(request,env={},fetcher=fetch){
  const url=new URL(request.url);
  try{
   if(url.pathname==='/api/web/health')return json({ok:true,app:'Animer',relayConfigured:!!env.STREAM_SIGNING_KEY});
@@ -101,7 +101,7 @@ export async function handleApi(request,env={},fetcher=fetch){
   if(url.pathname==='/api/media')return await media(request,env,fetcher);
   if(!url.pathname.startsWith('/api/'))return error('Route introuvable.',404);
   if(!['GET','POST','PATCH','DELETE'].includes(request.method))return error('Méthode non autorisée.',405);
-  if(!sameOrigin(request)&&request.method!=='GET')return error('Origine non autorisée.',403);
+  if(!sameOrigin(request,env)&&request.method!=='GET')return error('Origine non autorisée.',403);
   const route=url.pathname.slice(4);
   if(!route.startsWith('/v1/')&&route!=='/version-policy')return error('Route API introuvable.',404);
   if(route.includes('..')||route.includes('\\'))return error('Route invalide.',400);
@@ -113,4 +113,17 @@ export async function handleApi(request,env={},fetcher=fetch){
   if(response.headers.has('Retry-After'))output.set('Retry-After',response.headers.get('Retry-After'));
   return new Response(response.body,{status:response.status,headers:output});
  }catch{return error('Le service ne répond pas actuellement. Réessayez dans un instant.',502);}
+}
+export async function handleApi(request,env={},fetcher=fetch){
+ const origin=request.headers.get('Origin');
+ if(origin&&!sameOrigin(request,env))return error('Origine non autorisée.',403);
+ if(request.method==='OPTIONS'){
+  if(!origin)return error('Origine manquante.',400);
+  const requested=(request.headers.get('Access-Control-Request-Headers')||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+  if(requested.some(x=>!['authorization','content-type','range'].includes(x)))return error('En-têtes non autorisés.',403);
+  return new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'GET,HEAD,POST,PATCH,DELETE,OPTIONS','Access-Control-Allow-Headers':'Authorization,Content-Type,Range','Access-Control-Max-Age':'600','Vary':'Origin'}});
+ }
+ const result=await routeApi(request,env,fetcher);
+ if(origin){result.headers.set('Access-Control-Allow-Origin',origin);result.headers.set('Access-Control-Expose-Headers','Content-Length,Content-Range,Accept-Ranges,Retry-After');result.headers.append('Vary','Origin');}
+ return result;
 }

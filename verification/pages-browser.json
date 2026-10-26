@@ -1,0 +1,14 @@
+{
+  "static_callback_http_200": true,
+  "pages_prefix_assets": true,
+  "oauth_redirect_to_project_path": true,
+  "pkce_code_exchange": true,
+  "auth_query_removed": true,
+  "oauth_denial_feedback": true,
+  "provider_iframe_video_decoded": true,
+  "manual_next_episode": true,
+  "no_local_api_on_pages": true,
+  "no_account_token_to_provider": true,
+  "page_errors": [],
+  "limits": "Local static server under /Animer/; mocked Supabase and Nartya APIs; not a real account or a live provider test."
+}

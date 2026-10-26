@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { authOwnedByHub } from "./hubAuth";
 import { platform } from "@/platform";
+import {callbackUrl} from '../web/urls.js';
 
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -59,4 +60,4 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 });
 
 /** Enregistré côté Supabase (Auth > URL Configuration > Redirect URLs). */
-export const OAUTH_REDIRECT = `${window.location.origin}/auth/callback`;
+export const OAUTH_REDIRECT = callbackUrl(window.location.origin,import.meta.env.BASE_URL);

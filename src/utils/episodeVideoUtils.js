@@ -39,7 +39,7 @@ async function resolveStreamToken(token, { forceRefresh = false } = {}) {
       }),
       timeoutPromise,
     ]);
-    if (result?.success && result.url) return { success: true, url: result.url };
+    if (result?.success && result.url) return { success: true, url: result.url,kind:result.kind||'video' };
     return { success: false, error: result?.error || "Source indisponible" };
   } catch (err) {
     if (err?.message === "TIMEOUT") return { success: false, error: "Source trop lente" };
@@ -56,6 +56,7 @@ async function _resolveOneSource({ key, id, label, source }, { forceRefresh = fa
   return {
     success: true,
     videoUrl: resolved.url,
+    kind:resolved.kind,
     usedSource: key,
     usedLabel: label,
     // Compartiment de la mémoire de débit du lecteur.
@@ -240,6 +241,7 @@ export async function getEpisodeVideoUrl(slug, seasonId, episodeIndex, language 
   return {
     success: true,
     videoUrl: resolved.videoUrl,
+    kind: resolved.kind,
     episode,
     episodeTitle: episode.title || `Épisode ${episode.episode ?? episode.number ?? episodeIndex + 1}`,
     episodeImage: episode.image || episode.thumbnail || null,

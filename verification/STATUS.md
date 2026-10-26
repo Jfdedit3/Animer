@@ -1,15 +1,13 @@
-# Validation Animer 1.0.0
+# Validation Animer 1.1.0 — GitHub Pages
 
-- Installation propre : npm ci --ignore-scripts réussie ; aucune dépendance du projet Android modifiée.
-- 9 tests relais/PWA réussis, 34 tests hérités réussis.
-- Build Vite et Worker ESM réussis avec les dépendances du verrou npm.
-- Chromium, 390×844 et 1440×1000 : connexion e-mail avec SDK Supabase et captcha simulés, recherche/filtre année, fiche, épisodes, résolution, décodage et lecture d’un MP4 de test. Aucune erreur de page ; aucun débordement horizontal. CSP conservée pendant les tests.
-- Les services et comptes sont simulés pour ces parcours. Aucun mot de passe personnel ni épisode réel utilisé.
-- Vérification live sans session : santé Nartya HTTP 200 ; catalogue Nartya HTTP 401. L’accès exige une session autorisée.
-- Le nouveau domaine OAuth et Turnstile doit être autorisé par l’administrateur Nartya. Cette autorisation n’a pas pu être effectuée depuis ce projet.
-- Relais serveur avec destinations chiffrées, expiration, rejet des adresses locales et des redirections dangereuses ; les jetons de compte ne vont pas aux hébergeurs vidéo.
-- Pas de validation live d’une lecture Nartya, ni de garantie sur les blocages d’IP de datacenter des hébergeurs.
-- Anime4K est conservé sous réserve des capacités du navigateur ; pas de validation GPU sur appareil physique.
-- Hébergement Sites : les helpers du plugin n’étaient pas installés dans cet environnement. Le Worker ESM est construit localement, puis source et archive sont synchronisées au même commit avant déploiement.
+- 15 tests web/relais/PWA et 34 tests hérités réussis.
+- Build statique Pages réussi : ressources sous `/Animer/`, vraie page `auth/callback/index.html`, manifeste et service worker limités au projet.
+- Build Vite + Worker également vérifié pour conserver la variante avec relais.
+- Chromium mobile 390×844 sur un serveur statique sans réécriture ni API : retour OAuth avec le SDK Supabase, challenge et vérificateur PKCE, nettoyage du code dans l’URL, message de refus OAuth, lecture et décodage d’un MP4 dans une iframe protégée, passage à l’épisode suivant. Aucune erreur JavaScript, aucune requête API vers Pages, aucun jeton de compte transmis au fournisseur.
+- Les comptes, réponses Supabase/Nartya et lecteur fournisseur sont simulés ; la vidéo est générée pour les tests. Ce parcours ne prouve pas une connexion réelle ou la compatibilité des hébergeurs réels.
+- Pages est activé avec la source workflow sur le dépôt. Le workflow dédié publie `dist/pages/`.
+- L’administrateur Nartya doit autoriser `https://jfdedit3.github.io/Animer/auth/callback/` dans Supabase et `jfdedit3.github.io` dans Turnstile. Aucune autorisation administrative Nartya n’est disponible depuis ce dépôt.
+- Sans relais, les contrôles avancés Animer, Anime4K et le suivi automatique de progression ne fonctionnent pas dans une iframe tierce. Les fournisseurs peuvent refuser leur intégration.
+- Un relais HTTPS optionnel peut être configuré par `ANIMER_RELAY_URL`, avec une origine CORS explicite côté serveur. La publication Sites antérieure reste privée et n’est pas utilisée par Pages.
 
-Les empreintes du code ayant servi au build sont dans build-inputs.json et les résultats navigateur dans browser.json. Les journaux et captures locaux ne sont pas publiés dans Git.
+`pages-browser.json` contient les assertions du parcours Pages. `browser.json` conserve le précédent parcours de la variante avec relais (1.0.0). `build-inputs.json` contient les empreintes des sources actuelles ; journaux et captures locaux ne sont pas publiés dans Git.

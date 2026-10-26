@@ -1,3 +1,4 @@
+import ProviderEmbed from "@/components/video/ProviderEmbed";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
@@ -206,6 +207,7 @@ export default function WatchPage() {
   );
 
   const [videoUrl, setVideoUrl] = useState(null);
+  const [playbackKind,setPlaybackKind]=useState('video');
   // Compartiment de la mémoire de débit du lecteur.
   const [usedSourceKey, setUsedSourceKey] = useState(null);
   // Plantées en cours de lecture sur cet épisode.
@@ -424,6 +426,7 @@ export default function WatchPage() {
         usedSourceRef.current = result.usedSource;
         setUsedSourceKey(result.usedSourceKey || null);
         setVideoUrl(result.videoUrl);
+        setPlaybackKind(result.kind||'video');
         // La bascule est réarmée.
         fallbackLockRef.current = false;
       } else {
@@ -748,7 +751,7 @@ export default function WatchPage() {
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-black">
-      {playerMounted && (
+      {playerMounted && playbackKind!=='embed' && (
         <VideoPlayer
           videoUrl={videoUrl}
           mediaKey={playbackMediaKey}
@@ -783,6 +786,7 @@ export default function WatchPage() {
           }}
         />
       )}
+      {videoUrl&&playbackKind==='embed'&&<ProviderEmbed url={videoUrl} title={`${animeTitle} — ${epLabel}`} sources={playerSources} sourceId={source} onSourceChange={changeSource} onBack={goBack} onPrev={()=>goToEpisode(currentIndex-1)} onNext={goNext} hasPrev={hasPrev} hasNext={canAdvance}/>}
 
       {/* Dans l'overlay ArtPlayer, donc visibles en plein écran. */}
       {overlayNode &&
@@ -880,7 +884,7 @@ export default function WatchPage() {
         )}
 
       {/* Tant que l'overlay n'existe pas (chargement ou erreur d'extraction). */}
-      {!overlayNode && <FallbackBackButton onClick={goBack} />}
+      {!overlayNode && (!videoUrl||playbackKind!=='embed') && <FallbackBackButton onClick={goBack} />}
 
       {loading && <WatchLoading />}
 

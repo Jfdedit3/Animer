@@ -12,7 +12,7 @@ export default {
    if(!/^\/profile-art\/(?:grand-line|kurotsuki|raijin)\/(?:avatar-frame|banner-background|banner-overlay)\.png$/.test(url.pathname))return new Response('Introuvable',{status:404});
    return Response.redirect(`https://raw.githubusercontent.com/Jfdedit3/Animer/main/public${url.pathname}`,302);
   }
-  let pathname=url.pathname==='/'||url.pathname==='/auth/callback'?'/index.html':url.pathname;
+  let pathname=url.pathname==='/'||url.pathname.replace(/\/$/,'')==='/auth/callback'?'/index.html':url.pathname;
   const file=assets[pathname];
   if(!file)return new Response('Page introuvable',{status:404,headers:{'Content-Type':'text/plain;charset=utf-8'}});
   const body=Uint8Array.from(atob(file),c=>c.charCodeAt(0)),extension=pathname.split('.').at(-1);
