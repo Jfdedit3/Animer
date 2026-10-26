@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {publicHttps,sealTicket,openTicket,checkedFetch} from '../server/security.js';
-import {handleApi,rewritePlaylist} from '../server/router.js';
+import {handleApi,rewritePlaylist,mediaHeaders} from '../server/router.js';
 const secret=btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
 const env={STREAM_SIGNING_KEY:secret};
 test('media tickets conceal destinations, reject edits, expiry and a different signing key',async()=>{
@@ -52,4 +52,9 @@ test('embed resolution uses recipe domains and does not send account credentials
  assert.equal(response.status,200);const result=await response.json(),payload=await openTicket(new URL(result.url,'https://animer.example.com').searchParams.get('t'),secret);
  assert.equal(payload.url,'https://cdn.example.com/master.m3u8');assert.equal(requests.at(-1).headers.Authorization,undefined);
  assert.equal(requests[0].headers.Authorization,'Bearer fixture.token');
+});
+
+test('provider transport keeps its user agent and drops embed referers when the recipe requires it',()=>{
+ const headers=mediaHeaders({url:'https://cdn.example.com/video.mp4',referer:'https://embed.example.com/e',transport:{userAgent:'Fixture player',dropRefererOffHost:true,hostMatch:'embed.example.com'}},'bytes=0-10');
+ assert.equal(headers['User-Agent'],'Fixture player');assert.equal(headers.Referer,undefined);assert.equal(headers.Origin,undefined);assert.equal(headers.Range,'bytes=0-10');
 });

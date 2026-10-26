@@ -8,4 +8,3 @@ export default function ProfilePanelAmbience({ id }) {
   const count = id === "storm" ? 2 : id === "rain" ? 15 : id === "snow" ? 13 : 9;
   return <div className={`profile-panel-ambience panel-${id}`} aria-hidden="true">{Array.from({ length: count }, (_, index) => <i key={index} />)}</div>;
 }
-

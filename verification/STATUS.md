@@ -1,7 +1,7 @@
 # Validation Animer 1.0.0
 
 - Installation propre : npm ci --ignore-scripts réussie ; aucune dépendance du projet Android modifiée.
-- 8 tests relais/PWA réussis, 34 tests hérités réussis.
+- 9 tests relais/PWA réussis, 34 tests hérités réussis.
 - Build Vite et Worker ESM réussis avec les dépendances du verrou npm.
 - Chromium, 390×844 et 1440×1000 : connexion e-mail avec SDK Supabase et captcha simulés, recherche/filtre année, fiche, épisodes, résolution, décodage et lecture d’un MP4 de test. Aucune erreur de page ; aucun débordement horizontal. CSP conservée pendant les tests.
 - Les services et comptes sont simulés pour ces parcours. Aucun mot de passe personnel ni épisode réel utilisé.

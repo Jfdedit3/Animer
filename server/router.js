@@ -8,7 +8,17 @@ const error=(message,status=502)=>json({success:false,error:message},status);
 function authHeaders(request){const value=request.headers.get('Authorization');return value&&/^Bearer [\w.\-]+$/.test(value)?{Authorization:value}:{};}
 function upstreamBase(env){const u=publicHttps(env.UPSTREAM_API_URL||DEFAULT_UPSTREAM);return u.href.replace(/\/$/,'');}
 function sameOrigin(request){const origin=request.headers.get('Origin');return !origin||origin===new URL(request.url).origin;}
-function mediaHeaders(payload,range){const headers={'Accept-Encoding':'identity'};if(payload.referer){headers.Referer=payload.referer;headers.Origin=new URL(payload.referer).origin;}if(range&&/^bytes=\d*-\d*$/.test(range))headers.Range=range;return headers;}
+export function mediaHeaders(payload,range){
+ const headers={'Accept-Encoding':'identity'};
+ if(payload.transport?.userAgent)headers['User-Agent']=payload.transport.userAgent;
+ if(payload.transport?.language)headers['Accept-Language']=payload.transport.language;
+ if(payload.referer){headers.Referer=payload.referer;headers.Origin=new URL(payload.referer).origin;}
+ const rules=payload.transport;
+ if(rules?.dropRefererOffHost&&rules.hostMatch){const target=new URL(payload.url);if(target.hostname.includes(rules.hostMatch)){headers.Referer=target.origin+'/';headers.Origin=target.origin;}else{delete headers.Referer;delete headers.Origin;}}
+ if(rules?.mp4Referer?.pattern&&rules.mp4Referer.template){try{const match=payload.url.match(new RegExp(rules.mp4Referer.pattern));if(match){const ref=rules.mp4Referer.template.replace(/\{(\d+)\}/g,(_,i)=>match[Number(i)]||'');headers.Referer=publicHttps(ref).href;}}catch{/* Ignore an invalid provider rule. */}}
+ if(range&&/^bytes=\d*-\d*$/.test(range))headers.Range=range;
+ return headers;
+}
 async function mediaLink(payload,secret){return '/api/media?t='+encodeURIComponent(await sealTicket(payload,secret));}
 
 export async function rewritePlaylist(text,base,payload,secret){
@@ -43,7 +53,7 @@ async function resolve(request,env,fetcher){
  if(!sourceRes.ok){const messages={401:'Connectez-vous pour lancer la lecture.',403:'Ce compte ou ce site n’est pas autorisé à accéder à la source.',410:'Lien expiré : rechargez les épisodes.',429:'Trop de demandes de lecture. Patientez un instant.'};return error(messages[sourceRes.status]||'La source vidéo est indisponible.',sourceRes.status);}
  const source=(await sourceRes.json()).data;
  if(!source?.url)return error('Source vidéo introuvable.',404);
- let media=publicHttps(source.url).href,referer=null;
+ let media=publicHttps(source.url).href,referer=null,transport=null;
  if(!/\.(m3u8|mp4|webm)(?:[?#]|$)/i.test(media)){
   if(!recipeRes.ok)return error('La configuration des sources est indisponible.',503);
   const recipe=(await recipeRes.json()).data;if(!recipe?.sources||typeof recipe.sources!=='object')return error('La configuration des sources est invalide.',503);
@@ -53,6 +63,8 @@ async function resolve(request,env,fetcher){
   if(entry.canonicalHost&&entry.hostMatch&&embed.hostname.includes(entry.hostMatch)&&!embed.hostname.endsWith(entry.canonicalHost)){embed.hostname=entry.canonicalHost;if(!inDomains(embed.hostname,entry.domains))return error('Hôte canonique non autorisé.',403);}
   if(entry.embedQuery){const q=new URLSearchParams(entry.embedQuery);for(const [key,value] of q)if(!embed.searchParams.has(key))embed.searchParams.set(key,value);}
   referer=embed.href;
+  const recipeHeaders=new Headers(entry.headers||{});
+  transport={userAgent:recipeHeaders.get('User-Agent')||'',language:recipeHeaders.get('Accept-Language')||'',dropRefererOffHost:!!entry.dropRefererOffHost,hostMatch:entry.hostMatch||'',mp4Referer:entry.mp4Referer||null};
   const embedHeaders={...(entry.headers||{})};delete embedHeaders.Authorization;delete embedHeaders.authorization;delete embedHeaders.Cookie;delete embedHeaders.cookie;
   if(entry.refererFromEmbed){embedHeaders.Referer=embed.href;embedHeaders.Origin=embed.origin;}
   const loaded=await checkedFetch(embed.href,{headers:embedHeaders},fetcher);if(!loaded.response.ok)return error('L’hébergeur ne répond pas. Essayez une autre source.',502);
@@ -61,7 +73,7 @@ async function resolve(request,env,fetcher){
   if(!extracted.success||!extracted.videoUrl||!isExtractedVideoUrlConsistentWithEmbed(referer,extracted.videoUrl))return error('Aucun flux compatible trouvé pour cette source.',422);
   media=publicHttps(extracted.videoUrl).href;
  }
- const url=await mediaLink({url:media,referer,exp:Date.now()+2*3600000},env.STREAM_SIGNING_KEY);
+ const url=await mediaLink({url:media,referer,transport,exp:Date.now()+2*3600000},env.STREAM_SIGNING_KEY);
  return json({success:true,url:url+(/\.m3u8(?:[?#]|$)/i.test(media)?'&kind=hls':'')});
 }
 
