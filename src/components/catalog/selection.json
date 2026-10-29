@@ -1,0 +1,23 @@
+{
+  "source": "https://anime-sama.to/",
+  "items": [
+    {
+      "slug": "as-jujutsu-kaisen",
+      "title": "Jujutsu Kaisen",
+      "cover": "https://cdn.jsdelivr.net/gh/Anime-Sama/IMG@img/contenu/thumb/jujutsu-kaisen.webp",
+      "source": "Anime-Sama"
+    },
+    {
+      "slug": "as-les-carnets-de-lapothicaire",
+      "title": "Les Carnets de l'Apothicaire",
+      "cover": "https://cdn.jsdelivr.net/gh/Anime-Sama/IMG@img/contenu/thumb/les-carnets-de-lapothicaire.webp",
+      "source": "Anime-Sama"
+    },
+    {
+      "slug": "as-one-piece",
+      "title": "One Piece",
+      "cover": "https://cdn.jsdelivr.net/gh/Anime-Sama/IMG@img/contenu/thumb/one-piece.webp",
+      "source": "Anime-Sama"
+    }
+  ]
+}

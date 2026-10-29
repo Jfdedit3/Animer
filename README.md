@@ -2,6 +2,10 @@
 
 Site anime et PWA **sans inscription ni connexion**, publié sur **https://jfdedit3.github.io/Animer/**. Interface responsive avec effet glass et bibliothèque enregistrée dans le navigateur.
 
+## Interface
+
+Accueil avec sélection illustrée, recherche distincte, navigation regroupée et compteur de favoris. Les trois œuvres mises en avant proviennent du catalogue Anime-Sama inclus ; c'est une sélection éditoriale, sans classement de popularité. Les fiches, listes, favoris et réglages partagent les couleurs et les surfaces en verre. Navigation tactile en bas sur téléphone, grille responsive, chargement progressif, lien d'accès au contenu et respect des préférences de réduction des animations.
+
 ## Fonctionnement
 
 - Catalogue de secours inclus : jusqu’à 500 fiches TV/films issues d’anime-offline-database (ODbL / DbCL), datées et signalées à l’écran en cas de panne de Jikan.

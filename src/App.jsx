@@ -1,3 +1,4 @@
+import DiscoveryHero from "./components/catalog/DiscoveryHero";
 import { asCatalogue, asAnime, asEpisodes, asStream } from "./local/animesama";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
@@ -6,6 +7,7 @@ import {
   NavLink,
   Navigate,
   Link,
+  useLocation,
   useParams,
   useSearchParams,
 } from "react-router-dom";
@@ -20,6 +22,10 @@ import {
   Star,
   Download,
   Upload,
+  Play,
+  ArrowUpRight,
+  ShieldCheck,
+  Moon,
 } from "lucide-react";
 import { publicCatalog, publicAnime, publicEpisodes } from "./local/catalog";
 import { exportLocalData, importLocalData, LOCAL_USER } from "./local/database";
@@ -108,6 +114,7 @@ function AnimeCard({ item }) {
     <Link to={"/anime/" + encodeURIComponent(m.slug)} className="local-card">
       <div>
         <img src={m.cover} alt="" loading="lazy" />
+        <span className="local-card-open" aria-hidden="true"><Play size={20} fill="currentColor" /></span>
         {item.score > 0 && (
           <span>
             <Star size={12} />
@@ -117,13 +124,15 @@ function AnimeCard({ item }) {
       </div>
       <h2>{m.title}</h2>
       <p>
-        {item.year || ""}
+        {item.year || item.source || "Anime"}
         {item.episodes ? " · " + item.episodes + " épisodes" : ""}
       </p>
     </Link>
   );
 }
 function Catalog() {
+  const { pathname } = useLocation();
+  const isHome = pathname === "/";
   const [params, setParams] = useSearchParams();
   const q = params.get("q") || "",
     page = Number(params.get("page")) || 1;
@@ -142,35 +151,25 @@ function Catalog() {
   }, [q, page]);
   return (
     <section className="local-catalog">
-      <header className="local-hero">
-        <p className="local-eyebrow">ANIME APRÈS MINUIT</p>
-        <h1>
-          {q
-            ? "À la recherche de votre prochaine aventure."
-            : "Votre univers anime, à votre rythme."}
-        </h1>
-        <p>
-          Sans compte. Vos favoris, listes et épisodes vus restent sur cet
-          appareil.
-        </p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setParams(input.trim() ? { q: input.trim() } : {});
-          }}
-        >
-          <Search size={20} />
-          <input
-            aria-label="Rechercher un anime"
-            placeholder="Rechercher un anime…"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-          />
-          <button type="submit">Rechercher</button>
+      {isHome && !q && page === 1 && <DiscoveryHero />}
+      <header className="local-hero local-search-header" id="catalogue">
+        <div>
+          <p className="local-eyebrow">{isHome && !q ? "LA SUITE DE TA SOIRÉE" : "EXPLORER"}</p>
+          <h1>{q ? `À la recherche de « ${q} »` : isHome ? "Une envie d’anime ?" : "Trouve ta prochaine histoire."}</h1>
+          <p>Des univers à explorer. Une collection qui te ressemble.</p>
+        </div>
+        <form role="search" onSubmit={(e) => {
+          e.preventDefault();
+          setParams(input.trim() ? { q: input.trim() } : {});
+        }}>
+          <Search size={20} aria-hidden="true" />
+          <input type="search" aria-label="Rechercher un anime" placeholder="Un titre, une nouvelle aventure…"
+            value={input} onChange={(e) => setInput(e.target.value)} />
+          <button type="submit" aria-label="Rechercher"><ArrowUpRight size={20} /><span>Rechercher</span></button>
         </form>
       </header>
       <div className="local-section-title">
-        <h2>{q ? "Résultats pour « " + q + " »" : "Les incontournables"}</h2>
+        <div><p className="local-eyebrow">LE CATALOGUE</p><h2>{q ? "Les résultats" : "Tous les univers"}</h2></div>
         <span>
           {getProvider().id === "nartya"
             ? "Catalogue public · Jikan / MyAnimeList"
@@ -178,7 +177,9 @@ function Catalog() {
         </span>
       </div>
       {result.loading ? (
-        <Busy />
+        <div className="local-grid local-skeleton-grid" role="status" aria-label="Chargement du catalogue">
+          {Array.from({length: 12}, (_, i) => <div className="local-card-skeleton" key={i}><div /><span /></div>)}
+        </div>
       ) : result.error ? (
         <Failure error={result.error} retry={result.retry} />
       ) : (
@@ -188,8 +189,7 @@ function Catalog() {
               <p className="local-notice">
                 Sélection Anime-Sama enregistrée le{" "}
                 {new Date(result.data.fetchedAt).toLocaleDateString("fr-FR")}.
-                Le relais est indisponible ou non configuré : les fiches et
-                lecteurs en direct nécessitent son activation.{" "}
+                Le catalogue en direct est temporairement indisponible. Les fiches et lecteurs nécessitent une connexion au service.{" "}
                 <a
                   href="https://anime-sama.to/"
                   target="_blank"
@@ -521,7 +521,7 @@ function AnimeDetail({ anime }) {
         )}
       </div>
       {anime.slug.startsWith("as-") && (
-        <div className="local-actions">
+        <div className="local-actions local-episode-tools">
           <label>
             Langue{" "}
             <select
@@ -797,35 +797,45 @@ function LocalSettings() {
   );
 }
 export default function App() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo({top: 0, behavior: "instant"}); }, [pathname]);
+  const favoriteCount = useFavoritesStore((s) => s.slugs.size);
+  const currentSection = nav.find(([path]) => path === pathname)?.[1] || "Fiche anime";
   useEffect(() => {
     useListsStore.getState().ensureLoaded();
     useFavoritesStore.getState().ensureLoaded();
   }, []);
   return (
     <div className="local-app">
+      <a className="local-skip" href="#contenu" onClick={(e) => {e.preventDefault();document.getElementById("contenu")?.focus();}}>Aller au contenu</a>
       <header className="local-topbar">
         <Link to="/" className="local-brand">
-          animer<span>夜</span>
+          <Moon size={27} fill="currentColor" aria-hidden="true" />animer<span>夜</span>
         </Link>
-        <span className="local-save-indicator">● Sauvegarde locale</span>
+        <span className="local-current-section">{currentSection}</span>
+        <Link to="/settings" className="local-save-indicator"><ShieldCheck size={16} /><span>Sur cet appareil</span></Link>
       </header>
       <nav className="local-nav" aria-label="Navigation principale">
-        {nav.map(([path, label, Icon]) => (
-          <NavLink key={path} to={path} end={path === "/"}>
-            <Icon size={19} />
-            <span>{label}</span>
-          </NavLink>
+        {nav.map(([path, label, Icon], i) => (
+          <div className="local-nav-item" key={path}>
+            {(i === 0 || i === 2) && <p className="local-nav-label">{i === 0 ? "DÉCOUVRIR" : "MA COLLECTION"}</p>}
+            <NavLink to={path} end={path === "/"}>
+              <Icon size={19} aria-hidden="true" /><span>{label}</span>
+              {path === "/favorites" && favoriteCount > 0 && <b className="local-nav-count">{favoriteCount}</b>}
+            </NavLink>
+          </div>
         ))}
+        <aside className="local-library-note"><ShieldCheck size={20} /><strong>Ta collection, à toi.</strong><p>Favoris et progression sont conservés sur cet appareil.</p><Link to="/settings">Gérer ma sauvegarde <ArrowUpRight size={14} /></Link></aside>
       </nav>
-      <main className="local-main">
+      <main className="local-main" id="contenu" tabIndex={-1}>
         <Suspense fallback={<Busy />}>
           <Routes>
             <Route path="/" element={<Catalog />} />
             <Route path="/search" element={<Catalog />} />
             <Route path="/anime/:slug" element={<Anime />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/lists" element={<Lists />} />
-            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/favorites" element={<div className="local-collection"><Favorites /></div>} />
+            <Route path="/lists" element={<div className="local-collection"><Lists /></div>} />
+            <Route path="/history" element={<div className="local-collection"><HistoryPage /></div>} />
             <Route path="/settings" element={<LocalSettings />} />
             <Route path="/watch/:slug" element={<ResumeLink />} />
             <Route path="*" element={<Navigate to="/" replace />} />

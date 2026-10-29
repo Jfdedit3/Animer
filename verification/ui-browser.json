@@ -1,0 +1,18 @@
+{
+  "hero_selection_links_match": true,
+  "explore_scrolls_to_search": true,
+  "search_uses_catalog": true,
+  "favorite_and_seen_persist": true,
+  "responsive_widths": [
+    320,
+    390,
+    768,
+    1024,
+    1440
+  ],
+  "no_overflow": true,
+  "navigation_returns_to_top": true,
+  "no_account_requests": true,
+  "page_errors": [],
+  "scope": "Built Pages artifact, controlled Anime-Sama relay responses; cover imagery loaded from public CDN."
+}

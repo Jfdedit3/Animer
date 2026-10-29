@@ -1,5 +1,5 @@
 const SCOPE=new URL(self.registration.scope),PREFIX='animer-shell:'+SCOPE.pathname+':';
-const SHELL=PREFIX+'v4';
+const SHELL=PREFIX+'v5';
 const CORE=['','manifest.webmanifest','icon.png','data/catalog.json','data/LICENSE.txt','data/animesama-home.json'].map(path=>new URL(path,SCOPE).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(SHELL).then(cache=>cache.addAll(CORE)));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(PREFIX)&&key!==SHELL).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));});
