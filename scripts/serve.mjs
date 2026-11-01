@@ -2,6 +2,8 @@ import http from 'node:http';
 import {pathToFileURL} from 'node:url';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
+import {Readable} from 'node:stream';
+import {pipeline} from 'node:stream/promises';
 // Render generates this persistent server-side seed. Never expose it in the client build.
 if(!process.env.STREAM_SIGNING_KEY&&process.env.STREAM_SIGNING_SEED){
  if(process.env.STREAM_SIGNING_SEED.length<32)throw new Error('STREAM_SIGNING_SEED doit contenir au moins 32 caractères.');
@@ -12,12 +14,15 @@ const port=Number(process.env.PORT||8788);
 const server=http.createServer(async(req,res)=>{
  try{
   const url=`http://${req.headers.host}${req.url}`;
-  const request=new Request(url,{method:req.method,headers:req.headers,...(!['GET','HEAD'].includes(req.method)?{body:ReadableStream.from(req),duplex:'half'}:{})});
+  const request=new Request(url,{method:req.method,headers:req.headers,...(!['GET','HEAD'].includes(req.method)?{body:Readable.toWeb(req),duplex:'half'}:{})});
   const response=await worker.fetch(request,process.env,{waitUntil:p=>p.catch(()=>{})});
   res.writeHead(response.status,Object.fromEntries(response.headers));
-  if(response.body)for await(const chunk of response.body)if(!res.write(Buffer.from(chunk)))await new Promise(resolve=>res.once('drain',resolve));
-  res.end();
- }catch{res.writeHead(500,{'Content-Type':'text/plain'});res.end('Erreur du serveur.');}
+  if(response.body)await pipeline(Readable.fromWeb(response.body),res);
+  else res.end();
+ }catch{
+  if(res.headersSent||res.destroyed){res.destroy();return;}
+  res.writeHead(500,{'Content-Type':'text/plain'});res.end('Erreur du serveur.');
+ }
 });
 const host=process.env.HOST||'127.0.0.1';
 server.listen(port,host,()=>console.log(`Animer: http://${host}:${port}`));
