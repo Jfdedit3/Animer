@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: animer-relay
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/web/health
+    envVars:
+      - key: STREAM_SIGNING_SEED
+        generateValue: true
+      - key: ALLOWED_WEB_ORIGINS
+        value: https://jfdedit3.github.io

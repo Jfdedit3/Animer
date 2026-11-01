@@ -20,6 +20,14 @@ La version web Movies est accessible sur **https://jfdedit3.github.io/Animer/#/m
 
 Le relais expose `GET /api/movies/catalog`, `/genres`, `/title/:type/:id`, `/season/:id/:season` et `/resolve` (avec `/player` conservé comme alias de résolution). Les requêtes de métadonnées sont limitées à une origine fixe, bornées et mises en cache cinq minutes. Aucun cookie ou jeton de compte de l’appelant n’est transmis à la source. Les coordonnées du film ou de l’épisode sont validées et ne permettent pas de passer une URL arbitraire. Le relais suit le protocole du client web public, vérifie un flux disponible puis émet des capacités média chiffrées, expirantes, pour les vidéos et sous-titres. Les playlists HLS, leurs segments et les plages MP4 passent par `/api/media`. Les constantes du protocole public sont lues sans exécuter de JavaScript distant. Les sources DASH ne sont pas présentées comme du MP4 et aucun DRM n’est supprimé.
 
+**État de la lecture Movies :** les lectures réelles d’un film et d’un épisode ont été vérifiées avec le relais Node local. Le relais Cloudflare public reçoit cependant des refus HTTP 403 / 429 des fournisseurs. Le retrait de l’iframe corrige le message « CinemaOS n’autorise pas la connexion », mais ne suffit pas à rétablir la lecture sur cet hébergement. Les résultats locaux ne garantissent pas la disponibilité des sources depuis un autre serveur.
+
+### Déployer le relais Node pour GitHub Pages
+
+Le dépôt contient un `Dockerfile` et un Blueprint Render : [créer le service Render](https://render.com/deploy?repo=https://github.com/Jfdedit3/Animer). Render construit le site et son relais Node, génère un secret persistant côté serveur et vérifie `/api/web/health`. Aucun compte n’est ajouté à l’application. Le service gratuit peut dormir après une période d’inactivité.
+
+Après la création du service, renseigner son origine HTTPS dans la variable du dépôt GitHub **`ANIMER_RELAY_URL`**, puis relancer le workflow **Publier sur GitHub Pages**. Vérifier ensuite une lecture réelle depuis Pages : l’état de santé du serveur ne prouve pas qu’un fournisseur accepte ses requêtes. Un compte Render et la création effective du service sont nécessaires ; le Blueprint seul ne déploie rien.
+
 ## Fonctionnement
 
 - Catalogue de secours inclus : jusqu’à 500 fiches TV/films issues d’anime-offline-database (ODbL / DbCL), datées et signalées à l’écran en cas de panne de Jikan.
