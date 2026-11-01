@@ -1,3 +1,9 @@
+# Validation Animer 1.6.1 — retrait du saut d’introduction
+
+- Bouton « Passer l’intro », réglages de durée et code associé retirés à la demande de l’utilisateur.
+- 28 tests web réussis ; constructions GitHub Pages et Worker réussies.
+- Les sections suivantes conservent les vérifications des versions précédentes.
+
 # Validation Animer 1.6.0 — navigation et génériques
 
 - Navigation aux flèches dans le catalogue et les boutons, focus visible, activation unique par Entrée et défilement des cartes hors écran. Texte et widgets natifs gardent leur gestion du clavier ; les dialogues restent limités à leur contenu.

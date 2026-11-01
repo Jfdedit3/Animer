@@ -8,8 +8,6 @@ Accueil avec sélection illustrée, recherche distincte, navigation regroupée e
 
 La version 1.6 ajoute une rangée « Récemment regardés » alimentée par l’historique local, des cartes de progression et un lecteur mieux encadré avec titre et langue. Les flèches déplacent la sélection visible entre liens, cartes et boutons ; Entrée active la sélection. Les champs de texte et sélecteurs gardent leurs commandes habituelles. Les dialogues limitent la navigation à leur contenu. Dans le lecteur, les flèches gauche/droite cherchent de 10 secondes, haut/bas règlent le volume et Entrée contrôle lecture/pause ; Tab permet de rejoindre les commandes.
 
-Le bouton **Passer l’intro** du lecteur Animer avance manuellement de 90 secondes depuis la position actuelle et reste disponible en plein écran. Il apparaît dans les cinq premières minutes, puis disparaît après utilisation. Réglages permet de le désactiver ou de choisir 60, 85, 90 ou 120 secondes. Les limites des génériques ne sont pas détectées automatiquement ; les lecteurs tiers en iframe ne peuvent pas être commandés par ce bouton.
-
 ## Fonctionnement
 
 - Catalogue de secours inclus : jusqu’à 500 fiches TV/films issues d’anime-offline-database (ODbL / DbCL), datées et signalées à l’écran en cas de panne de Jikan.

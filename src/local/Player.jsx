@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { SkipForward, X, Keyboard } from "lucide-react";
-import { useSettingsStore } from "../stores/useSettingsStore";
-import { introSkipSeconds, introSkipTarget } from "../web/introSkip";
+import { X, Keyboard } from "lucide-react";
 import VideoPlayer from "../components/player/VideoPlayer";
 import { saveEpisodeProgress, getEpisodeProgress } from "../api/progress";
 import { LOCAL_USER } from "./database";
@@ -24,9 +21,6 @@ function NartyaMedia({
 }) {
   const [resume, setResume] = useState(null),
     [error, setError] = useState("");
-  const [overlay, setOverlay] = useState(null), [canSkip, setCanSkip] = useState(false), [skipped, setSkipped] = useState(false);
-  const skipEnabled = useSettingsStore(s => s.skipButtonEnabled);
-  const skipSeconds = introSkipSeconds(useSettingsStore(s => s.introSkipSeconds));
   const api = useRef(null),
     last = useRef({ time: 0, duration: 0 }),
     savedAt = useRef(0),
@@ -89,15 +83,6 @@ function NartyaMedia({
     },
     [checkpoint],
   );
-  const skipIntro = () => {
-    const player = api.current;
-    if (!player) return;
-    const target = introSkipTarget(player.getCurrentTime(), player.getDuration(), skipSeconds);
-    if (target === null) return;
-    player.seek(target);
-    save(target, player.getDuration());
-    setSkipped(true);
-  };
   return (
     <>
       <div className="nartya-local-stage" aria-label="Lecteur Nartya">
@@ -125,9 +110,7 @@ function NartyaMedia({
             onSourceChange={onSourceChange}
             onLanguageChange={onLanguageChange}
             onPlayerApi={playerApi}
-            onOverlayReady={setOverlay}
             onTimeUpdate={(time, duration) => {
-              setCanSkip(time < 300 && introSkipTarget(time, duration, skipSeconds) !== null);
               last.current = { time, duration };
               if (Date.now() - savedAt.current >= 5000) {
                 savedAt.current = Date.now();
@@ -143,11 +126,6 @@ function NartyaMedia({
               )
             }
           />
-        )}
-        {overlay && skipEnabled && canSkip && !skipped && createPortal(
-          <button type="button" className="local-intro-skip" data-directional-control="true" onClick={skipIntro} title={`Avancer de ${skipSeconds} secondes (durée réglable dans Réglages)`}>
-            <span>Passer l’intro<small>+{skipSeconds} secondes</small></span><SkipForward size={20} />
-          </button>, overlay
         )}
       </div>
       {error && <p role="alert">{error}</p>}

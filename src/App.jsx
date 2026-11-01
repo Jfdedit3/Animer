@@ -44,7 +44,6 @@ import { getProvider, saveProvider } from "./providers/registry";
 import { safeProviderUrl } from "./web/urls";
 import { toast } from "./lib/toast";
 import { getWatchHistory } from "./api/history";
-import { introSkipSeconds } from "./web/introSkip";
 const Favorites = lazy(() => import("./pages/FavoritesPage"));
 const Lists = lazy(() => import("./pages/MyListsPage"));
 const HistoryPage = lazy(() => import("./pages/HistoryPage"));
@@ -676,8 +675,6 @@ function LocalSettings() {
   );
   const [message, setMessage] = useState("");
   const [sourceMode, setSourceMode] = useState(getProvider().id);
-  const skipEnabled = useSettingsStore(s => s.skipButtonEnabled);
-  const skipSeconds = useSettingsStore(s => s.introSkipSeconds);
   const save = () => {
     const blob = new Blob([JSON.stringify(exportLocalData(), null, 2)], {
         type: "application/json",
@@ -715,12 +712,6 @@ function LocalSettings() {
           />
           Réduire les animations
         </label>
-      </div>
-      <div className="glass-panel">
-        <h2>Lecture et génériques</h2>
-        <label><input type="checkbox" checked={skipEnabled} onChange={e => setSetting("skipButtonEnabled", e.target.checked)} />Afficher « Passer l’intro »</label>
-        <label>Durée du saut<select aria-label="Durée du saut d’introduction" value={introSkipSeconds(skipSeconds)} onChange={e => setSetting("introSkipSeconds", Number(e.target.value))}>{[60, 85, 90, 120].map(n => <option key={n} value={n}>{n} secondes</option>)}</select></label>
-        <p>Le bouton avance de cette durée depuis la position actuelle. Utilise-le au début du générique : ses limites ne sont pas détectées automatiquement. Disponible dans le lecteur Animer, y compris en plein écran.</p>
       </div>
       <div className="glass-panel">
         <h2>Sauvegarde locale</h2>
