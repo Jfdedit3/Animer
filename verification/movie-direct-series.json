@@ -1,0 +1,17 @@
+{
+  "base": "http://127.0.0.1:8793/",
+  "real_video_decoded": true,
+  "video": {
+    "ready": 4,
+    "time": 0.519576,
+    "duration": 2296.3770000000036,
+    "paused": false,
+    "error": null
+  },
+  "iframe_count": 0,
+  "provider_page_requested_by_browser": false,
+  "relayed_media_requests": 10,
+  "selected_source": "q4-0",
+  "subtitles": 1,
+  "page_errors": []
+}

@@ -1,3 +1,12 @@
+# Validation Animer 1.7.1 — flux Movies dans notre lecteur
+
+- L’iframe CinemaOS est retirée de Movies. Le serveur récupère les flux du client public, confirme une réponse média HLS/MP4, puis le navigateur utilise uniquement les capacités `/api/media` dans le composant VideoPlayer/Artplayer existant.
+- Sélection de source, sous-titres (SRT converti en VTT) et reprise locale de position ; aucun bouton de saut d’introduction ajouté.
+- 37 tests web et 34 tests hérités réussis, dont protocole de réponse, rejet d’altération, exclusion des URL privées et du DASH, émission de capacités chiffrées sans cookies/jetons utilisateur, sous-titres et sauvegarde/restauration de position.
+- Tests navigateur avec médias de contrôle : aucune iframe, sous-titres, changement de source, sauvegarde à 42 secondes, reprise après rechargement, fermeture et largeurs 320/390/768/1024/1440 px. Aucune erreur de page.
+- Lecture réelle dans notre lecteur via le relais local : readyState 4, durée de film 8348 secondes, vidéo en lecture, zéro iframe, aucune requête de page fournisseur par le navigateur et aucune erreur de page. Même vérification réussie sur un épisode de série (durée vidéo 2296 secondes).
+- Résultats : `movie-direct-controls.json`, `movie-direct-live.json`, `movie-direct-series.json`. Les sections ci-dessous sont historiques ; le mode iframe décrit pour la 1.7.0 a été remplacé.
+
 # Validation Animer 1.7.0 — Movies web
 
 - Site Movies distinct dans la même application Pages (`#/movies`), avec boutons de passage entre Anime et Movies.

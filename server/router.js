@@ -85,6 +85,10 @@ async function media(request,env,fetcher){
  const headers=mediaHeaders(payload,request.headers.get('Range'));
  const loaded=await checkedFetch(payload.url,{method:request.method,headers},fetcher),response=loaded.response;
  if(!response.ok&&response.status!==416){await response.body?.cancel();return error('Le flux vidéo est indisponible.',response.status>=400&&response.status<600?response.status:502);}
+ if(request.method==='GET'&&response.ok&&payload.subtitle){
+  const text=await boundedText(response,1000000);
+  return new Response(subtitleToVtt(text),{headers:{'Content-Type':'text/vtt;charset=utf-8','Cache-Control':'private,no-store','X-Content-Type-Options':'nosniff'}});
+ }
  const type=response.headers.get('Content-Type')||'';
  if(request.method==='GET'&&response.ok&&(/\.m3u8(?:[?#]|$)/i.test(loaded.url)||/mpegurl/i.test(type))){
   const playlist=await rewritePlaylist(await boundedText(response),loaded.url,payload,env.STREAM_SIGNING_KEY);
@@ -93,6 +97,12 @@ async function media(request,env,fetcher){
  const out=new Headers({'Cache-Control':'private,no-store','X-Content-Type-Options':'nosniff'});
  for(const name of ['Content-Type','Content-Length','Content-Range','Accept-Ranges','Content-Encoding'])if(response.headers.has(name))out.set(name,response.headers.get(name));
  return new Response(request.method==='HEAD'?null:response.body,{status:response.status,headers:out});
+}
+export function subtitleToVtt(text){
+ const value=text.replace(/^\uFEFF/,'').trim();
+ if(value.startsWith('WEBVTT'))return value;
+ if(!/\d{2}:\d{2}:\d{2},\d{3}\s*-->/.test(value))throw new Error('Format de sous-titres non reconnu.');
+ return 'WEBVTT\n\n'+value.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g,'$1.$2')+'\n';
 }
 
 async function routeApi(request,env={},fetcher=fetch){

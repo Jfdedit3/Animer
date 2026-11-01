@@ -1,4 +1,5 @@
 import { checkedFetch, boundedText } from './security.js';
+import { resolveMovieStreams } from './movieStreams.js';
 
 const SOURCE = 'https://cinemaos.tech';
 const cache = new Map();
@@ -80,7 +81,12 @@ export async function handleMovies(request, env, fetcher = fetch) {
       const data = await sourceJson({ requestID: 'tvEpisodes', id: String(id), season: String(number) }, fetcher);
       return json({ data: { number, episodes: (data.episodes || []).map(ep => ({ number: ep.episode_number, title: ep.name, overview: ep.overview, image: movieImage(ep.still_path, 'w300'), duration: ep.runtime })) } });
     }
-    if (route === 'player') return json({ data: { kind: 'embed', provider: 'CinemaOS', url: moviePlayerUrl(Object.fromEntries(q)) } });
+    if (route === 'resolve' || route === 'player') {
+      const type = typeOf(q.get('type') || 'movie'), id = positive(q.get('id'));
+      const season = positive(q.get('season') || 1, 10000), episode = positive(q.get('episode') || 1, 10000);
+      const metadata = await sourceJson({ requestID: type === 'tv' ? 'tvData' : 'movieData', id: String(id), language: 'en-US' }, fetcher);
+      return json({ data: await resolveMovieStreams({ type, id, season, episode, metadata }, env, fetcher) });
+    }
     return json({ error: 'Route Movies introuvable.' }, 404);
   } catch (error) {
     return json({ error: error.message || 'La source Movies ne répond pas.' }, /invalides?|invalide/.test(error.message) ? 400 : 502);

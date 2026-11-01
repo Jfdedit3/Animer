@@ -1,0 +1,17 @@
+{
+  "native_video_no_iframe": true,
+  "subtitles_french": true,
+  "seek_saved_to_local_library": true,
+  "source_change_resumes_position": true,
+  "resume_after_reload": true,
+  "responsive_widths": [
+    320,
+    390,
+    768,
+    1024,
+    1440
+  ],
+  "close_disposes_player": true,
+  "page_errors": [],
+  "scope": "Built Worker, real catalogue metadata, generated MP4 fixture and controlled stream-resolution response."
+}

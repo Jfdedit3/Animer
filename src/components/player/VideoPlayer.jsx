@@ -399,6 +399,10 @@ export default function VideoPlayer({
         getCurrentTime: () => art.currentTime || 0,
         getDuration: () => art.duration || 0,
         isPaused: () => !art.playing,
+        setSubtitle: (track) => {
+          if (!track) { art.subtitle.show = false; return; }
+          Promise.resolve(art.subtitle.switch(track.url, { type: 'vtt', escape: true })).then(() => { art.subtitle.show = true; }).catch(() => { art.notice.show = 'Sous-titres indisponibles'; });
+        },
         // Sur la <video> : `art.playbackRate` passe par la liste de vitesses, sans 0.95 ni 1.05.
         setRate: (r) => {
           try {

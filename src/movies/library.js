@@ -31,6 +31,16 @@ export function markMovieEpisode(item, season, episode) {
   if (watched.has(key)) watched.delete(key); else watched.add(key);
   updateMovie(item, { watched: [...watched], ...(item.type === 'movie' ? { status: watched.has(key) ? 'completed' : 'watching' } : {}) });
 }
+export function getMovieProgress(item, season, episode) {
+  return readMovies()[item.key]?.progress?.[`${season}:${episode}`] || null;
+}
+export function saveMovieProgress(item, season, episode, time, duration) {
+  if (!Number.isFinite(time) || time < 0 || !Number.isFinite(duration) || duration <= 0) return;
+  const row = readMovies()[item.key] || {}, completed = time / duration >= .95, key = `${season}:${episode}`;
+  const watched = new Set(row.watched || []);
+  if (completed) watched.add(key);
+  updateMovie(item, { progress: { ...row.progress, [key]: { time: Math.min(time, duration), duration, updatedAt: Date.now() } }, watched: [...watched], last: { season, episode }, status: item.type === 'movie' && completed ? 'completed' : row.status || 'watching' });
+}
 export function subscribeMovies(listener) {
   const storage = event => { if (event.key === MOVIES_KEY || event.key === null) listener(); };
   window.addEventListener(EVENT, listener); window.addEventListener('storage', storage);
@@ -43,7 +53,11 @@ export function importMovies(data) {
   for (const row of Object.values(data.items)) {
     const item = cleanMovie(row.item), seen = (row.watched || []).filter(x => /^\d{1,4}:\d{1,4}$/.test(x)).slice(0,5000);
     const last = row.last && Number.isInteger(row.last.season) && Number.isInteger(row.last.episode) && row.last.season > 0 && row.last.episode > 0 ? { season: row.last.season, episode: row.last.episode } : null;
-    items[item.key] = { item, favorite: row.favorite === true, status: ['planned','watching','completed'].includes(row.status) ? row.status : '', watched: seen, last, openedAt: Number(row.openedAt) || 0, updatedAt: Number(row.updatedAt) || 0 };
+    const progress = {};
+    for (const [key, point] of Object.entries(row.progress || {}).slice(0,5000)) {
+      if (/^\d{1,4}:\d{1,4}$/.test(key) && Number.isFinite(point?.time) && point.time >= 0 && Number.isFinite(point.duration) && point.duration > 0) progress[key] = { time: Math.min(point.time, point.duration), duration: point.duration, updatedAt: Number(point.updatedAt) || 0 };
+    }
+    items[item.key] = { item, favorite: row.favorite === true, status: ['planned','watching','completed'].includes(row.status) ? row.status : '', watched: seen, last, progress, openedAt: Number(row.openedAt) || 0, updatedAt: Number(row.updatedAt) || 0 };
   }
   write(items);
 }
