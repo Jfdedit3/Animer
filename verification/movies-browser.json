@@ -1,0 +1,20 @@
+{
+  "live_public_catalogue": true,
+  "search_real_metadata": true,
+  "keyboard_navigation": true,
+  "favorite_and_list_persist": true,
+  "series_seasons_and_seen_persist": true,
+  "player_episode_coordinates_and_next": true,
+  "separate_anime_storage": true,
+  "backup_export_import": true,
+  "anime_movies_switch_both_directions": true,
+  "responsive_widths": [
+    320,
+    390,
+    768,
+    1024,
+    1440
+  ],
+  "page_errors": [],
+  "scope": "Built Worker, real public CinemaOS metadata through local relay. Playback iframe mocked for deterministic navigation; actual provider playback tested separately."
+}

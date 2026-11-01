@@ -1,3 +1,13 @@
+# Validation Animer 1.7.0 — Movies web
+
+- Site Movies distinct dans la même application Pages (`#/movies`), avec boutons de passage entre Anime et Movies.
+- Catalogue public CinemaOS / TMDB, fiches en français, films/séries, recherche, genres, tri, saisons et épisodes. Lecture via le lecteur public CinemaOS dans une iframe isolée, sans connexion.
+- Bibliothèque Movies séparée : favoris, listes, historique des séances ouvertes, épisodes vus manuellement et export/import JSON. L’API de métadonnées ne reçoit aucun cookie ou jeton de compte.
+- 32 tests web et 34 tests hérités réussis. Tests navigateur : véritable API publique via le relais local, recherche, persistance, saisons, import/export, navigation entre les deux univers et largeurs 320/390/768/1024/1440 px. Aucune erreur de page ni débordement horizontal dans ce parcours.
+- Test séparé du lecteur tiers : vidéo réelle décodée dans une iframe, readyState 4, temps supérieur à 11 secondes. Puis lecture réelle confirmée dans l’interface Movies pour un film et un épisode de série (Fight Club et The Office). Les autres fournisseurs sondés ne sont pas proposés, car ils refusaient les conditions de l’intégration.
+- Les positions et durées du lecteur tiers ne sont pas accessibles au site. Aucun compte Nartya utilisé, aucune garantie de lecture de tous les titres ni de toutes les langues.
+- Résultats : `movies-browser.json`, `movies-playback.json`. Journaux et captures conservés localement.
+
 # Validation Animer 1.6.1 — retrait du saut d’introduction
 
 - Bouton « Passer l’intro », réglages de durée et code associé retirés à la demande de l’utilisateur.

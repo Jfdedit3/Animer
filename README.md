@@ -8,6 +8,18 @@ Accueil avec sélection illustrée, recherche distincte, navigation regroupée e
 
 La version 1.6 ajoute une rangée « Récemment regardés » alimentée par l’historique local, des cartes de progression et un lecteur mieux encadré avec titre et langue. Les flèches déplacent la sélection visible entre liens, cartes et boutons ; Entrée active la sélection. Les champs de texte et sélecteurs gardent leurs commandes habituelles. Les dialogues limitent la navigation à leur contenu. Dans le lecteur, les flèches gauche/droite cherchent de 10 secondes, haut/bas règlent le volume et Entrée contrôle lecture/pause ; Tab permet de rejoindre les commandes.
 
+## Movies — films et séries
+
+La version web Movies est accessible sur **https://jfdedit3.github.io/Animer/#/movies**. Le bouton Movies dans Animer et le bouton Anime dans Movies permettent de changer d’univers.
+
+- Interface dédiée avec effet glass, navigation aux flèches, sélection à l’affiche, recherche, genres, films/séries et pagination.
+- Catalogue et fiches en français obtenus auprès de l’API publique CinemaOS / TMDB, sans compte Nartya ni clé embarquée. Les saisons et épisodes sont chargés à la demande.
+- Le lecteur public CinemaOS est intégré dans une iframe isolée. Ses commandes permettent de sélectionner une source ; la disponibilité et les langues dépendent de ce fournisseur. Aucun code privé de l’APK Movies n’est redistribué et aucun contrôle de connexion Nartya n’est supprimé.
+- Favoris, listes, historique des séances ouvertes et épisodes marqués vus sont enregistrés sous `animer:movies:v1`, séparément de la bibliothèque anime. Sauvegarde et restauration JSON dans Réglages Movies.
+- Le lecteur externe ne communique pas sa position à notre site : il n’y a pas de fausse durée de visionnage ni de reprise automatique. Les épisodes et films vus se marquent manuellement. Aucun saut d’introduction ajouté.
+
+Le relais expose `GET /api/movies/catalog`, `/genres`, `/title/:type/:id`, `/season/:id/:season` et `/player`. Les requêtes de métadonnées sont limitées à une origine fixe, bornées et mises en cache cinq minutes. Aucun cookie ou jeton de compte de l’appelant n’est transmis à la source. Les coordonnées du lecteur sont validées et ne permettent pas de passer une URL arbitraire.
+
 ## Fonctionnement
 
 - Catalogue de secours inclus : jusqu’à 500 fiches TV/films issues d’anime-offline-database (ODbL / DbCL), datées et signalées à l’écran en cas de panne de Jikan.
