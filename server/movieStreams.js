@@ -33,7 +33,11 @@ export async function decodeMovieEnvelope(envelope, publicKey) {
 }
 async function textAt(url, fetcher, max = 1500000, timeout = 18000) {
   const { response } = await checkedFetch(url, { headers: { Accept: 'application/json,text/html,*/*', 'User-Agent': AGENT, Referer: ORIGIN + '/' }, signal: AbortSignal.timeout(timeout) }, fetcher);
-  if (!response.ok) throw new Error('La source vidéo ne répond pas. Essaie une autre source.');
+  if (!response.ok) {
+    const path = new URL(url).pathname;
+    const phase = path.startsWith('/watch/') ? 'Page de lecture' : path.startsWith('/_next/') ? 'Configuration du lecteur' : 'Recherche de sources';
+    throw new Error(`${phase} indisponible (HTTP ${response.status}).`);
+  }
   return boundedText(response, max);
 }
 function scriptUrl(path) {
