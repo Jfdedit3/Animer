@@ -1,3 +1,13 @@
+# Validation Animer 1.6.0 — navigation et génériques
+
+- Navigation aux flèches dans le catalogue et les boutons, focus visible, activation unique par Entrée et défilement des cartes hors écran. Texte et widgets natifs gardent leur gestion du clavier ; les dialogues restent limités à leur contenu.
+- Le focus clavier active les raccourcis du lecteur Nartya ; Entrée permet lecture/pause. Les menus sont limités à la hauteur réelle du lecteur pour rester accessibles sur téléphone.
+- Interface : historique local récent avec progression, surfaces de lecture glass, titre/langue de la lecture et indications du clavier. Les largeurs 320, 390, 768, 1024 et 1440 px ont été vérifiées sans débordement horizontal.
+- Bouton manuel « Passer l’intro » : avance relative de 90 s, durée réglable (60/85/90/120), activation/désactivation persistante et visibilité en plein écran. Le saut n’atteint jamais la fin du média. Aucune détection automatique de générique ni contrôle du lecteur tiers en iframe.
+- 30 tests web et 34 tests hérités réussis. Tests navigateur sur artefact Pages : navigation, champs texte, dialogues, historique réel du stockage local, lecture/pause/recherche au clavier, saut d’introduction et préférences persistantes.
+- Régression du lecteur Nartya : MP4/HLS, reprise après rechargement, qualité, source, langue, épisode suivant et repli iframe réussis. Aucune erreur de page. Les tests vidéo utilisent des médias générés et un relais contrôlé ; ils ne valident pas de GPU physique ou tous les hébergeurs tiers.
+- Résultats complémentaires : `directional-browser.json`, `nartya-player-browser.json` ; journaux et captures disponibles localement.
+
 # Validation Animer 1.4.0 — lecteur Nartya et sauvegarde locale
 
 - Le lecteur Nartya existant (`components/player/VideoPlayer.jsx`, Artplayer) remplace le lecteur HTML natif pour les flux directs. Traductions françaises, menus langue/source, qualité HLS, vitesse, volume/boost, plein écran, PiP et réglage Anime4K selon les capacités du navigateur. Les lecteurs tiers restent protégés dans une iframe quand le flux est inaccessible.

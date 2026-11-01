@@ -237,6 +237,13 @@ export default function VideoPlayer({
     });
 
     artRef.current = art;
+    // Keyboard focus must activate the same hotkeys as a pointer click.
+    art.template.$player.tabIndex = 0;
+    art.template.$player.setAttribute("aria-label", "Lecteur vidéo — flèches pour avancer, reculer et régler le volume");
+    art.proxy(art.template.$player, "focusin", () => { art.isFocus = true; });
+    art.proxy(art.template.$player, "focusout", (event) => {
+      if (!art.template.$player.contains(event.relatedTarget)) art.isFocus = false;
+    });
     art._loadedMediaKey = null;
     art._switchingSource = true;
     art._endedMediaKey = null;
@@ -255,6 +262,7 @@ export default function VideoPlayer({
     container.addEventListener("contextmenu", blockContextMenu, true);
 
     art.hotkey.add("KeyF", () => { art.fullscreen = !art.fullscreen; });
+    art.hotkey.add("Enter", () => { art.toggle(); });
 
     // Plein écran sans changer l'état de lecture : on annule le toggle du premier clic.
     if (!platform.isMobile) art.on("dblclick", () => { art.toggle(); });

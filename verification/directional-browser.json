@@ -1,0 +1,22 @@
+{
+  "initial_arrow_focus": true,
+  "grid_arrows_and_scroll": true,
+  "text_caret_preserved": true,
+  "dialog_scope_and_single_enter_activation": true,
+  "focus_restored_after_dialog": true,
+  "recent_history_from_local_save": true,
+  "player_keyboard_seek_and_enter": true,
+  "skip_intro_90_seconds": true,
+  "skip_duration_persisted": true,
+  "skip_visible_in_fullscreen": true,
+  "skip_disable_preference": true,
+  "responsive_widths": [
+    320,
+    390,
+    768,
+    1024,
+    1440
+  ],
+  "page_errors": [],
+  "scope": "Built Pages frontend; controlled relay responses, generated 180s video, real local browser storage. No protected stream or account."
+}

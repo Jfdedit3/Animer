@@ -17,6 +17,7 @@ const DEFAULTS = {
   customColor: DEFAULT_CUSTOM_COLOR, // teinte hex quand themePreset === "custom"
   autoSkip: true,
   skipButtonEnabled: true,
+  introSkipSeconds: 90,
   autoSkipOpEd: false,
   discordPresence: false,
   reduceMotion: false, // coupe le grain et les animations

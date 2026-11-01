@@ -1,4 +1,5 @@
 import DiscoveryHero from "./components/catalog/DiscoveryHero";
+import { installDirectionalNavigation } from "./web/directionalNavigation";
 import { asCatalogue, asAnime, asEpisodes, asStream } from "./local/animesama";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
@@ -42,6 +43,8 @@ import { LIST_STATUSES } from "./utils/lists";
 import { getProvider, saveProvider } from "./providers/registry";
 import { safeProviderUrl } from "./web/urls";
 import { toast } from "./lib/toast";
+import { getWatchHistory } from "./api/history";
+import { introSkipSeconds } from "./web/introSkip";
 const Favorites = lazy(() => import("./pages/FavoritesPage"));
 const Lists = lazy(() => import("./pages/MyListsPage"));
 const HistoryPage = lazy(() => import("./pages/HistoryPage"));
@@ -152,6 +155,7 @@ function Catalog() {
   return (
     <section className="local-catalog">
       {isHome && !q && page === 1 && <DiscoveryHero />}
+      {isHome && !q && page === 1 && <RecentWatching />}
       <header className="local-hero local-search-header" id="catalogue">
         <div>
           <p className="local-eyebrow">{isHome && !q ? "LA SUITE DE TA SOIRÉE" : "EXPLORER"}</p>
@@ -245,6 +249,17 @@ function Catalog() {
       )}
     </section>
   );
+}
+function RecentWatching() {
+  const [items, setItems] = useState([]);
+  useEffect(() => { let alive = true; getWatchHistory().then(rows => { if (alive) setItems(rows.slice(0, 6)); }).catch(() => {}); return () => { alive = false; }; }, []);
+  if (!items.length) return null;
+  return <section className="local-recent" aria-label="Récemment regardés">
+    <div className="local-section-title"><div><p className="local-eyebrow">TA DERNIÈRE SÉANCE</p><h2>Récemment regardés</h2></div><Link to="/history">Tout l’historique <ArrowUpRight size={15} /></Link></div>
+    <div className="local-recent-row">{items.map(item => <Link key={item.slug} to={`/anime/${encodeURIComponent(item.slug)}`} className="local-recent-card">
+      <img src={item.cover} alt="" loading="lazy" /><div><small>{item.completed ? "ÉPISODE TERMINÉ" : "EN COURS"}</small><strong>{item.title || "Anime"}</strong><span>Épisode {item.episodeNumber} · {item.language?.toUpperCase()}</span><progress aria-label={`Progression de ${item.title || "cet anime"}`} max="100" value={Math.max(0, Math.min(100, item.progressPercent))} /></div><Play size={18} />
+    </Link>)}</div>
+  </section>;
 }
 function Anime() {
   const { slug } = useParams();
@@ -661,6 +676,8 @@ function LocalSettings() {
   );
   const [message, setMessage] = useState("");
   const [sourceMode, setSourceMode] = useState(getProvider().id);
+  const skipEnabled = useSettingsStore(s => s.skipButtonEnabled);
+  const skipSeconds = useSettingsStore(s => s.introSkipSeconds);
   const save = () => {
     const blob = new Blob([JSON.stringify(exportLocalData(), null, 2)], {
         type: "application/json",
@@ -698,6 +715,12 @@ function LocalSettings() {
           />
           Réduire les animations
         </label>
+      </div>
+      <div className="glass-panel">
+        <h2>Lecture et génériques</h2>
+        <label><input type="checkbox" checked={skipEnabled} onChange={e => setSetting("skipButtonEnabled", e.target.checked)} />Afficher « Passer l’intro »</label>
+        <label>Durée du saut<select aria-label="Durée du saut d’introduction" value={introSkipSeconds(skipSeconds)} onChange={e => setSetting("introSkipSeconds", Number(e.target.value))}>{[60, 85, 90, 120].map(n => <option key={n} value={n}>{n} secondes</option>)}</select></label>
+        <p>Le bouton avance de cette durée depuis la position actuelle. Utilise-le au début du générique : ses limites ne sont pas détectées automatiquement. Disponible dans le lecteur Animer, y compris en plein écran.</p>
       </div>
       <div className="glass-panel">
         <h2>Sauvegarde locale</h2>
@@ -798,6 +821,7 @@ function LocalSettings() {
 }
 export default function App() {
   const { pathname } = useLocation();
+  useEffect(() => installDirectionalNavigation(), []);
   useEffect(() => { window.scrollTo({top: 0, behavior: "instant"}); }, [pathname]);
   const favoriteCount = useFavoritesStore((s) => s.slugs.size);
   const currentSection = nav.find(([path]) => path === pathname)?.[1] || "Fiche anime";
@@ -813,6 +837,7 @@ export default function App() {
           <Moon size={27} fill="currentColor" aria-hidden="true" />animer<span>夜</span>
         </Link>
         <span className="local-current-section">{currentSection}</span>
+        <span className="local-keyboard-hint" aria-label="Navigation : flèches directionnelles et Entrée"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd><span>Naviguer</span><kbd>↵</kbd><span>Ouvrir</span></span>
         <Link to="/settings" className="local-save-indicator"><ShieldCheck size={16} /><span>Sur cet appareil</span></Link>
       </header>
       <nav className="local-nav" aria-label="Navigation principale">
