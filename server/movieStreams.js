@@ -1,5 +1,6 @@
 import { load } from 'cheerio/slim';
 import { checkedFetch, boundedText, publicHttps, sealTicket } from './security.js';
+import { movieboxSources } from './movieboxStreams.js';
 
 const ORIGIN = 'https://cinemaos.tech';
 const encoder = new TextEncoder(), decoder = new TextDecoder();
@@ -97,9 +98,16 @@ async function usableSource(source, fetcher) {
 }
 export async function resolveMovieStreams({ type, id, season = 1, episode = 1, metadata }, env, fetcher = fetch) {
   if (!env.STREAM_SIGNING_KEY) throw new Error('Le relais vidéo n’est pas configuré.');
+  let directError;
+  try {
+    const direct = await movieboxSources({ type, id, season, episode, metadata }, fetcher);
+    if (direct.sources.length) return await issueMovieStreams(direct.sources, direct.captions, env, fetcher);
+  } catch (error) { directError = error; }
   const watch = new URL(`${ORIGIN}/watch/${type}/${id}`);
   if (type === 'tv') { watch.searchParams.set('season', season); watch.searchParams.set('episode', episode); }
-  const html = await textAt(watch.href, fetcher);
+  let html;
+  try { html = await textAt(watch.href, fetcher); }
+  catch (error) { throw directError || error; }
   const token = html.replace(/\\"/g, '"').match(/"scrapeToken"\s*:\s*"([a-zA-Z0-9_.-]{20,600})"/)?.[1];
   if (!token) throw new Error('La source ne fournit pas de session publique de lecture.');
   const protocol = await publicProtocol(html, fetcher);
@@ -122,6 +130,9 @@ export async function resolveMovieStreams({ type, id, season = 1, episode = 1, m
       } catch { /* Ignore invalid subtitle addresses. */ }
     }
   }
+  return issueMovieStreams(sources, captions, env, fetcher);
+}
+export async function issueMovieStreams(sources, captions, env, fetcher) {
   const ordered = sources.sort((a, b) => Number(a.format !== 'hls') - Number(b.format !== 'hls'));
   let selectedId = null;
   // Confirm a playable media response, not a provider HTML page, before opening our player.
