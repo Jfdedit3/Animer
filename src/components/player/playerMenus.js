@@ -80,12 +80,12 @@ export function boostSettingOption(art) {
  * `onNeedsWarning` : première activation sur cet appareil, l'avertissement matériel passe
  * avant toute allocation.
  */
-export function anime4kSettingOption(art, selectedMode, onNeedsWarning) {
+export function anime4kSettingOption(art, selectedMode, onNeedsWarning, { label = "Anime4K", getSettings = useSettingsStore.getState } = {}) {
   return {
     name: "anime4k",
     // Pour les descriptions.
     width: platform.isMobile ? 285 : 340,
-    html: "Anime4K",
+    html: label,
     tooltip: anime4kLabel(selectedMode),
     icon: ANIME4K_ICON,
     selector: (platform.isMobile ? [{html:"Désactivé",value:"off"},...MOBILE_ANIME4K_MODES.map(m=>({html:m.label,value:m.value}))] : ANIME4K_OPTIONS).map((option) => ({
@@ -93,7 +93,7 @@ export function anime4kSettingOption(art, selectedMode, onNeedsWarning) {
       default: option.value === selectedMode,
     })),
     onSelect: (item) => {
-      const settings = useSettingsStore.getState();
+      const settings = getSettings();
       const currentMode = settings.anime4kMode || "off";
       if (item.value === "off" || (!(platform.isMobile && item.value === "mobile-m" && currentMode !== "mobile-m") && (currentMode !== "off" || settings.anime4kWarningAcknowledged))) {
         settings.setSetting("anime4kMode", item.value);

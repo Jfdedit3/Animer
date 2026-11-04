@@ -48,7 +48,7 @@ const fallbackReport = {
   webgpu: true,
 };
 
-export default function Anime4kWarningModal({ mode, sourceWidth, sourceHeight, onConfirm, onCancel }) {
+export default function Anime4kWarningModal({ mode, sourceWidth, sourceHeight, onConfirm, onCancel, label = "Anime4K" }) {
   // Remplacé dès que le diagnostic GPU répond.
   const [report, setReport] = useState(fallbackReport);
   const [checking,setChecking]=useState(true);
@@ -81,7 +81,7 @@ export default function Anime4kWarningModal({ mode, sourceWidth, sourceHeight, o
   const unavailable = checking || report.status === "unsupported";
 
   return createPortal(
-    <div role="dialog" aria-modal="true" aria-label="Activer Anime4K" className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div role="dialog" aria-modal="true" aria-label={`Activer ${label}`} className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <button
         type="button"
         aria-label="Annuler"
@@ -108,23 +108,25 @@ export default function Anime4kWarningModal({ mode, sourceWidth, sourceHeight, o
                 Qualité d'image
               </p>
             </div>
-            <h2 className="mt-3 font-display text-2xl font-bold tracking-tight">Anime4K</h2>
+            <h2 className="mt-3 font-display text-2xl font-bold tracking-tight">{label}</h2>
             <p className="mt-1 text-sm text-muted">Amélioration visuelle en temps réel</p>
           </div>
         </header>
 
         <div className="overflow-y-auto px-6 pb-5">
           <p className="text-sm leading-relaxed text-text/90">
-            Anime4K affine les contours et améliore la netteté de votre épisode en temps réel.
+            {label} affine les contours et améliore la netteté de la vidéo en temps réel.
             En contrepartie, le traitement peut provoquer des saccades sur une carte graphique
             trop modeste.
           </p>
 
+          {label === "Movie 4K" && <p className="mt-3 text-sm leading-relaxed text-muted">Traitement Anime4K appliqué aux films et séries. Le rendu peut accentuer les contours sur les prises de vue réelles : compare le résultat avec le mode désactivé. La définition finale dépend de la source et du GPU ; ce n’est pas une source 4K native.</p>}
+
           <div className={`mt-5 flex items-start gap-3 rounded-lg border px-4 py-3.5 ${meta.border} ${meta.bg}`}>
             <StatusIcon size={19} className={`mt-0.5 shrink-0 ${meta.text}`} />
             <div className="min-w-0">
-              <p className={`text-sm font-bold ${meta.text}`}>{report.title}</p>
-              <p className="mt-1 text-xs leading-relaxed text-muted">{report.summary}</p>
+              <p className={`text-sm font-bold ${meta.text}`}>{report.title.replaceAll("Anime4K", label)}</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted">{report.summary.replaceAll("Anime4K", label)}</p>
               <p className="mt-2 truncate text-[0.7rem] font-medium text-text/75" title={report.gpu}>
                 {report.gpu}
               </p>

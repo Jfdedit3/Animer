@@ -26,6 +26,10 @@ const DEFAULTS = {
   anime4kMode: "off", // "off" | "a" | "b" | "c" | "aa" | "bb" | "ca"
   anime4kQuality: "max", // qualité source verrouillée sous Anime4K
   anime4kWarningAcknowledged: false, // avertissement matériel déjà confirmé
+  movie4kMode: "off",
+  movie4kQuality: "max",
+  movie4kMobileQuality: "720",
+  movie4kWarningAcknowledged: false,
   releaseNotifications: true, // notif système à la sortie d'un épisode d'un anime suivi
   liteMode: false,
   advancedPlayerControls: false, // affiche le sélecteur d'hébergeur

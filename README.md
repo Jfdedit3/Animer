@@ -28,6 +28,10 @@ Le dépôt contient un `Dockerfile` et un Blueprint Render : [créer le service 
 
 Après la création du service, renseigner son origine HTTPS dans la variable du dépôt GitHub **`ANIMER_RELAY_URL`**, puis relancer le workflow **Publier sur GitHub Pages**. Vérifier ensuite une lecture réelle depuis Pages : l’état de santé du serveur ne prouve pas qu’un fournisseur accepte ses requêtes. Un compte Render et la création effective du service sont nécessaires ; le Blueprint seul ne déploie rien.
 
+### Movie 4K
+
+Dans Réglages Movies ou les réglages du lecteur, Movie 4K réutilise le moteur Anime4K pour améliorer la netteté et agrandir l’image. Il est désactivé par défaut, avec des préférences séparées de celles des anime. Le diagnostic GPU précède l’activation et une erreur de traitement rétablit la lecture normale. Les profils Android légers sont conservés. Sur les prises de vue réelles, les contours peuvent être trop accentués ; comparer avec le mode désactivé. Ce traitement ne fournit pas une source 4K native et ne résout pas les refus des fournisseurs vidéo.
+
 ## Fonctionnement
 
 - Catalogue de secours inclus : jusqu’à 500 fiches TV/films issues d’anime-offline-database (ODbL / DbCL), datées et signalées à l’écran en cas de panne de Jikan.

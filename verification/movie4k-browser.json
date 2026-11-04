@@ -1,0 +1,16 @@
+{
+  "base": "http://127.0.0.1:8793/",
+  "settings_and_player_label": "Movie 4K",
+  "default_off": true,
+  "incompatible_gpu_blocks_confirmation": true,
+  "renderer_failure_returns_to_normal_video": true,
+  "anime_preferences_preserved": true,
+  "responsive": [
+    320,
+    390,
+    768,
+    1440
+  ],
+  "page_errors": [],
+  "scope": "Generated MP4 fixture; GPU adapter deliberately unavailable. Physical GPU enhancement quality not tested."
+}
