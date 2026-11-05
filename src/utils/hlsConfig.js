@@ -131,7 +131,7 @@ const MOBILE_HLS_CONFIG = {
   backBufferLength: 15,
 };
 
-export function createFastStartHlsInstance(customConfig = {}, provider = null, getSettings = useSettingsStore.getState) {
+export function createFastStartHlsInstance(customConfig = {}, provider = null) {
   const measuredEstimate = getBandwidthEstimate(provider);
   const initialEstimate = platform.isMobile
     ? Math.min(Math.floor(measuredEstimate * 0.65), 6_000_000)
@@ -139,16 +139,14 @@ export function createFastStartHlsInstance(customConfig = {}, provider = null, g
   // Variante la plus légère pour afficher l'image plus tôt, sauf sous Anime4K qui verrouille
   // son niveau.
   const anime4kActive =
-    allowsAnime4k(platform) && getSettings().anime4kMode !== "off";
-  const instance = new Hls({
+    allowsAnime4k(platform) && useSettingsStore.getState().anime4kMode !== "off";
+  return new Hls({
     ...FAST_START_HLS_CONFIG,
     startLevel: anime4kActive ? -1 : 0,
     ...(platform.isMobile ? MOBILE_HLS_CONFIG : null),
     abrEwmaDefaultEstimate: initialEstimate,
     ...customConfig,
   });
-  instance._enhancementSettings = getSettings;
-  return instance;
 }
 
 /** Décodage logiciel (ChromeOS/Crostini) : le CPU sature au-delà de ~720p. */
@@ -161,7 +159,7 @@ const SOFTWARE_DECODE_MAX_HEIGHT = 720;
  * `anime4kQuality` est un niveau strict.
  */
 function applyQualityPolicy(hlsInstance, playbackPref) {
-  const settings = hlsInstance._enhancementSettings?.() || useSettingsStore.getState();
+  const settings = useSettingsStore.getState();
   const anime4kActive = allowsAnime4k(platform) && settings.anime4kMode !== "off";
 
   if (anime4kActive) {
@@ -362,7 +360,7 @@ const QUALITY_ICON =
 function buildQualityOptions(hlsInstance) {
   if (!hlsInstance?.levels || hlsInstance.levels.length <= 1) return [];
 
-  const settings = hlsInstance._enhancementSettings?.() || useSettingsStore.getState();
+  const settings = useSettingsStore.getState();
   const anime4kActive = allowsAnime4k(platform) && settings.anime4kMode !== "off";
   const pref = anime4kActive
     ? anime4kQualityPreference(settings)
@@ -416,7 +414,7 @@ export function addQualitySettingToPlayer(artInstance, hlsInstance) {
     selector: qualityOptions,
     onSelect: (item) => {
       const pref = item.value === -1 ? "auto" : String(hlsInstance.levels[item.value]?.height || "auto");
-      const settings = hlsInstance._enhancementSettings?.() || useSettingsStore.getState();
+      const settings = useSettingsStore.getState();
       const anime4kActive = allowsAnime4k(platform) && settings.anime4kMode !== "off";
       try {
         settings.setSetting(anime4kActive ? (isMobileAnime4kMode(settings.anime4kMode)?"anime4kMobileQuality":"anime4kQuality") : "playbackQuality", pref);

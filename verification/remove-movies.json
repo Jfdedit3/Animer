@@ -1,0 +1,11 @@
+{
+  "movies_navigation_removed": true,
+  "old_movies_routes_redirect_to_anime": true,
+  "no_movies_requests": true,
+  "movies_api": {
+    "catalog": 404,
+    "resolve?type=movie&id=550": 404
+  },
+  "no_movies_chunks": true,
+  "page_errors": []
+}

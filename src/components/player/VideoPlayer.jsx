@@ -1,4 +1,3 @@
-import {enhancementLabel, enhancementKey, enhancementSettings} from "@/utils/playerEnhancement";
 import {allowsAnime4k,isMobileAnime4kMode} from "@/utils/anime4kPolicy";
 import {setupTouchLock} from "@/utils/playerLock";
 import { useEffect, useRef, useState } from "react";
@@ -48,7 +47,6 @@ const SEEK_STEP_S = 10;
 export default function VideoPlayer({
   videoUrl,
   mediaFormat = null,
-  enhancement = "anime",
   sourceControls = null,
   mediaKey = null,
   title = "",
@@ -98,15 +96,13 @@ export default function VideoPlayer({
   const providerRef = useRef(provider);
   providerRef.current = provider;
   const volumeBoost = useSettingsStore((s) => s.volumeBoost);
-  const upscaleLabel = enhancementLabel(enhancement);
-  const getEnhancementSettings = () => enhancementSettings(useSettingsStore.getState(), enhancement);
-  const anime4kMode = useSettingsStore((s) => s[enhancementKey(enhancement, "anime4kMode")]);
+  const anime4kMode = useSettingsStore((s) => s.anime4kMode);
   const advancedPlayerControls = useSettingsStore((s) => s.advancedPlayerControls);
   const [pendingAnime4k, setPendingAnime4k] = useState(null);
   const [anime4kRevision, setAnime4kRevision] = useState(0);
 
   useEffect(() => {
-    const settings = getEnhancementSettings();
+    const settings = useSettingsStore.getState();
     if(platform.os==="android" && settings.anime4kMode!=="off" && !isAnime4kSupported({mobile:true})){settings.setSetting("anime4kMode","off");return;}
     if (!allowsAnime4k(platform) || (platform.isMobile && settings.anime4kMode!=="off" && !isMobileAnime4kMode(settings.anime4kMode))) {
       settings.setSetting("anime4kMode","off");
@@ -124,7 +120,7 @@ export default function VideoPlayer({
   const srcSettingRef = useRef(false);
 
   const anime4kSettingOption = (art, selectedMode) =>
-    buildAnime4kOption(art, selectedMode, setPendingAnime4k, { label: upscaleLabel, getSettings: getEnhancementSettings });
+    buildAnime4kOption(art, selectedMode, setPendingAnime4k);
 
   // Seulement si le runtime expose WebGPU.
   const addAnime4kSetting = (art) => {
@@ -136,7 +132,7 @@ export default function VideoPlayer({
     ) return;
 
     try {
-      const initMode = getEnhancementSettings().anime4kMode || "off";
+      const initMode = useSettingsStore.getState().anime4kMode || "off";
       art.setting.add(anime4kSettingOption(art, initMode));
       art._anime4kSettingAdded = true;
     } catch (e) {
@@ -588,7 +584,7 @@ export default function VideoPlayer({
     if (
       !allowsAnime4k(platform) ||
       !art ||
-      !getEnhancementSettings().anime4kWarningAcknowledged ||
+      !useSettingsStore.getState().anime4kWarningAcknowledged ||
       anime4kMode === "off" ||
       !isAnime4kSupported({mobile:platform.isMobile})
     ) return;
@@ -598,8 +594,8 @@ export default function VideoPlayer({
     const handle = startAnime4k(art.video, host, anime4kMode, (err) => {
       // Retour à la lecture normale.
       console.warn("[anime4k] désactivé :", err);
-      try { art.notice.show = (err?.message || "Anime4K indisponible sur cette source").replaceAll("Anime4K", upscaleLabel); } catch (_) {}
-      try { getEnhancementSettings().setSetting("anime4kMode", "off"); } catch (_) {}
+      try { art.notice.show = err?.message || "Upscale Anime4K indisponible sur cette source"; } catch (_) {}
+      try { useSettingsStore.getState().setSetting("anime4kMode", "off"); } catch (_) {}
     });
     return () => handle.stop();
   }, [anime4kMode, anime4kRevision]);
@@ -641,8 +637,7 @@ export default function VideoPlayer({
       const resumeTarget = resumeAtRef.current;
       const hls = createFastStartHlsInstance(
         resumeTarget > 2 ? { startPosition: resumeTarget } : {},
-        loadedProvider,
-        getEnhancementSettings
+        loadedProvider
       );
       hls.loadSource(videoUrl);
       hls.attachMedia(video);
@@ -668,7 +663,7 @@ export default function VideoPlayer({
           allowsAnime4k(platform) &&
           previous != null &&
           previous !== data.level &&
-          getEnhancementSettings().anime4kMode !== "off"
+          useSettingsStore.getState().anime4kMode !== "off"
         ) {
           setAnime4kRevision((revision) => revision + 1);
         }
@@ -686,9 +681,9 @@ export default function VideoPlayer({
             cb.current.onError?.({ fatal: true, reason: "starved", details: "networkStarved" }),
           // GPU à la peine : on coupe Anime4K avant de baisser la qualité.
           onPerformanceLimited: (reason) => {
-            if (getEnhancementSettings().anime4kMode === "off") return;
-            getEnhancementSettings().setSetting("anime4kMode", "off");
-            try { art.notice.show = `${upscaleLabel} désactivé (${reason})`; } catch (_) {}
+            if (useSettingsStore.getState().anime4kMode === "off") return;
+            useSettingsStore.getState().setSetting("anime4kMode", "off");
+            try { art.notice.show = `Anime4K désactivé (${reason})`; } catch (_) {}
           },
         });
         hls.once(Hls.Events.BUFFER_APPENDED, () => {
@@ -809,7 +804,6 @@ export default function VideoPlayer({
       <div ref={containerRef} className="h-full min-h-0 w-full max-w-full overflow-hidden" />
       {allowsAnime4k(platform) && pendingAnime4k && (
         <Anime4kWarningModal
-          label={upscaleLabel}
           mode={pendingAnime4k.mode}
           sourceWidth={pendingAnime4k.sourceWidth}
           sourceHeight={pendingAnime4k.sourceHeight}
@@ -817,7 +811,7 @@ export default function VideoPlayer({
           onConfirm={() => {
             const mode = pendingAnime4k.mode;
             setPendingAnime4k(null);
-            const settings = getEnhancementSettings();
+            const settings = useSettingsStore.getState();
             settings.setSetting("anime4kWarningAcknowledged", true);
             settings.setSetting("anime4kMode", mode);
           }}

@@ -8,30 +8,6 @@ Accueil avec sélection illustrée, recherche distincte, navigation regroupée e
 
 La version 1.6 ajoute une rangée « Récemment regardés » alimentée par l’historique local, des cartes de progression et un lecteur mieux encadré avec titre et langue. Les flèches déplacent la sélection visible entre liens, cartes et boutons ; Entrée active la sélection. Les champs de texte et sélecteurs gardent leurs commandes habituelles. Les dialogues limitent la navigation à leur contenu. Dans le lecteur, les flèches gauche/droite cherchent de 10 secondes, haut/bas règlent le volume et Entrée contrôle lecture/pause ; Tab permet de rejoindre les commandes.
 
-## Movies — films et séries
-
-La version web Movies est accessible sur **https://jfdedit3.github.io/Animer/#/movies**. Le bouton Movies dans Animer et le bouton Anime dans Movies permettent de changer d’univers.
-
-- Interface dédiée avec effet glass, navigation aux flèches, sélection à l’affiche, recherche, genres, films/séries et pagination.
-- Catalogue et fiches en français obtenus auprès de l’API publique CinemaOS / TMDB, sans compte Nartya ni clé embarquée. Les saisons et épisodes sont chargés à la demande.
-- Les flux HLS et MP4 sont résolus côté serveur puis transmis au lecteur Movies (Artplayer, le même composant que le lecteur anime) par le relais média. Aucune page de lecteur tiers n’est intégrée dans Movies. Les sources et sous-titres disponibles se sélectionnent sous la vidéo. Aucun code privé de l’APK Movies n’est redistribué et aucun contrôle de connexion Nartya n’est supprimé.
-- Favoris, listes, historique, positions de lecture et épisodes vus sont enregistrés sous `animer:movies:v1`, séparément de la bibliothèque anime. Sauvegarde et restauration JSON dans Réglages Movies.
-- La position de lecture est enregistrée lors des pauses, déplacements dans la vidéo et toutes les cinq secondes pendant la lecture. Elle est restaurée au prochain lancement. Les sous-titres SRT sont convertis en WebVTT par le relais. Aucun saut d’introduction ajouté.
-
-Le relais expose `GET /api/movies/catalog`, `/genres`, `/title/:type/:id`, `/season/:id/:season` et `/resolve` (avec `/player` conservé comme alias de résolution). Les requêtes de métadonnées sont limitées à une origine fixe, bornées et mises en cache cinq minutes. Aucun cookie ou jeton de compte de l’appelant n’est transmis à la source. Les coordonnées du film ou de l’épisode sont validées et ne permettent pas de passer une URL arbitraire. Le relais suit le protocole du client web public, vérifie un flux disponible puis émet des capacités média chiffrées, expirantes, pour les vidéos et sous-titres. Les playlists HLS, leurs segments et les plages MP4 passent par `/api/media`. Les constantes du protocole public sont lues sans exécuter de JavaScript distant. Les sources DASH ne sont pas présentées comme du MP4 et aucun DRM n’est supprimé.
-
-**État de la lecture Movies :** les lectures réelles d’un film et d’un épisode ont été vérifiées avec le relais Node local. Le relais Cloudflare public reçoit cependant des refus HTTP 403 / 429 des fournisseurs. Le retrait de l’iframe corrige le message « CinemaOS n’autorise pas la connexion », mais ne suffit pas à rétablir la lecture sur cet hébergement. Les résultats locaux ne garantissent pas la disponibilité des sources depuis un autre serveur.
-
-### Déployer le relais Node pour GitHub Pages
-
-Le dépôt contient un `Dockerfile` et un Blueprint Render : [créer le service Render](https://render.com/deploy?repo=https://github.com/Jfdedit3/Animer). Render construit le site et son relais Node, génère un secret persistant côté serveur et vérifie `/api/web/health`. Aucun compte n’est ajouté à l’application. Le service gratuit peut dormir après une période d’inactivité.
-
-Après la création du service, renseigner son origine HTTPS dans la variable du dépôt GitHub **`ANIMER_RELAY_URL`**, puis relancer le workflow **Publier sur GitHub Pages**. Vérifier ensuite une lecture réelle depuis Pages : l’état de santé du serveur ne prouve pas qu’un fournisseur accepte ses requêtes. Un compte Render et la création effective du service sont nécessaires ; le Blueprint seul ne déploie rien.
-
-### Movie 4K
-
-Dans Réglages Movies ou les réglages du lecteur, Movie 4K réutilise le moteur Anime4K pour améliorer la netteté et agrandir l’image. Il est désactivé par défaut, avec des préférences séparées de celles des anime. Le diagnostic GPU précède l’activation et une erreur de traitement rétablit la lecture normale. Les profils Android légers sont conservés. Sur les prises de vue réelles, les contours peuvent être trop accentués ; comparer avec le mode désactivé. Ce traitement ne fournit pas une source 4K native et ne résout pas les refus des fournisseurs vidéo.
-
 ## Fonctionnement
 
 - Catalogue de secours inclus : jusqu’à 500 fiches TV/films issues d’anime-offline-database (ODbL / DbCL), datées et signalées à l’écran en cas de panne de Jikan.

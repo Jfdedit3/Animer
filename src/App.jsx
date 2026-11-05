@@ -27,7 +27,6 @@ import {
   ArrowUpRight,
   ShieldCheck,
   Moon,
-  Clapperboard,
 } from "lucide-react";
 import { publicCatalog, publicAnime, publicEpisodes } from "./local/catalog";
 import { exportLocalData, importLocalData, LOCAL_USER } from "./local/database";
@@ -49,7 +48,6 @@ const Favorites = lazy(() => import("./pages/FavoritesPage"));
 const Lists = lazy(() => import("./pages/MyListsPage"));
 const HistoryPage = lazy(() => import("./pages/HistoryPage"));
 const Player = lazy(() => import("./local/Player"));
-const MoviesApp = lazy(() => import("./movies/MoviesApp"));
 const nav = [
   ["/", "Accueil", Home],
   ["/search", "Recherche", Search],
@@ -822,7 +820,6 @@ export default function App() {
     useListsStore.getState().ensureLoaded();
     useFavoritesStore.getState().ensureLoaded();
   }, []);
-  if (pathname === "/movies" || pathname.startsWith("/movies/")) return <Suspense fallback={<Busy />}><MoviesApp /></Suspense>;
   return (
     <div className="local-app">
       <a className="local-skip" href="#contenu" onClick={(e) => {e.preventDefault();document.getElementById("contenu")?.focus();}}>Aller au contenu</a>
@@ -831,7 +828,6 @@ export default function App() {
           <Moon size={27} fill="currentColor" aria-hidden="true" />animer<span>夜</span>
         </Link>
         <span className="local-current-section">{currentSection}</span>
-        <Link to="/movies" className="local-movies-link"><Clapperboard size={16} />Movies</Link>
         <span className="local-keyboard-hint" aria-label="Navigation : flèches directionnelles et Entrée"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd><span>Naviguer</span><kbd>↵</kbd><span>Ouvrir</span></span>
         <Link to="/settings" className="local-save-indicator"><ShieldCheck size={16} /><span>Sur cet appareil</span></Link>
       </header>
