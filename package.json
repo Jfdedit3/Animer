@@ -1,6 +1,6 @@
 {
   "name": "animer-web",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "private": true,
   "type": "module",
   "description": "Version web et PWA du client Anime Yoru, dérivée de Nartya (ISC).",

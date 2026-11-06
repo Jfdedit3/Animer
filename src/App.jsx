@@ -1,3 +1,5 @@
+import NartyaWebLayout from "./components/layout/NartyaWebLayout";
+import NartyaWebHome from "./components/home/NartyaWebHome";
 import DiscoveryHero from "./components/catalog/DiscoveryHero";
 import InterfacePicker from "./components/settings/InterfacePicker";
 import { installDirectionalNavigation } from "./web/directionalNavigation";
@@ -134,6 +136,7 @@ function AnimeCard({ item }) {
   );
 }
 function Catalog() {
+  const nartya = useSettingsStore(s => s.webInterface === "nartya");
   const { pathname } = useLocation();
   const isHome = pathname === "/";
   const [params, setParams] = useSearchParams();
@@ -152,6 +155,7 @@ function Catalog() {
       hasNext: !!data?.hasNext,
     };
   }, [q, page]);
+  if (nartya && isHome && !q && page === 1) return <NartyaWebHome result={result} />;
   return (
     <section className="local-catalog">
       {isHome && !q && page === 1 && <DiscoveryHero />}
@@ -284,6 +288,7 @@ function Anime() {
   return <AnimeDetail key={slug} anime={result.data} />;
 }
 function AnimeDetail({ anime }) {
+  const nartya = useSettingsStore(s => s.webInterface === "nartya");
   const { fav, toggle, busy } = useFavorite(anime.slug, anime);
   const statuses = useListsStore((s) => s.statuses),
     setStatus = useListsStore((s) => s.setStatus),
@@ -437,7 +442,8 @@ function AnimeDetail({ anime }) {
     ]),
   ];
   return (
-    <article className="local-detail">
+    <article className={`local-detail${nartya ? " nartya-detail" : ""}`}>
+      {nartya && <div className="nartya-detail-backdrop" aria-hidden="true"><img src={anime.banner || anime.cover} alt="" /></div>}
       <Link to="/" className="local-back">
         <ArrowLeft size={18} />
         Retour au catalogue
@@ -823,6 +829,20 @@ export default function App() {
     useListsStore.getState().ensureLoaded();
     useFavoritesStore.getState().ensureLoaded();
   }, []);
+  const content = (<Suspense fallback={<Busy />}>
+          <Routes>
+            <Route path="/" element={<Catalog />} />
+            <Route path="/search" element={<Catalog />} />
+            <Route path="/anime/:slug" element={<Anime />} />
+            <Route path="/favorites" element={<div className="local-collection"><Favorites /></div>} />
+            <Route path="/lists" element={<div className="local-collection"><Lists /></div>} />
+            <Route path="/history" element={<div className="local-collection"><HistoryPage /></div>} />
+            <Route path="/settings" element={<LocalSettings />} />
+            <Route path="/watch/:slug" element={<ResumeLink />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>);
+  if (webInterface === "nartya") return <NartyaWebLayout favoriteCount={favoriteCount}>{content}</NartyaWebLayout>;
   return (
     <div className="local-app" data-interface={webInterface}>
       <a className="local-skip" href="#contenu" onClick={(e) => {e.preventDefault();document.getElementById("contenu")?.focus();}}>Aller au contenu</a>
@@ -847,19 +867,7 @@ export default function App() {
         <aside className="local-library-note"><ShieldCheck size={20} /><strong>Ta collection, à toi.</strong><p>Favoris et progression sont conservés sur cet appareil.</p><Link to="/settings">Gérer ma sauvegarde <ArrowUpRight size={14} /></Link></aside>
       </nav>
       <main className="local-main" id="contenu" tabIndex={-1}>
-        <Suspense fallback={<Busy />}>
-          <Routes>
-            <Route path="/" element={<Catalog />} />
-            <Route path="/search" element={<Catalog />} />
-            <Route path="/anime/:slug" element={<Anime />} />
-            <Route path="/favorites" element={<div className="local-collection"><Favorites /></div>} />
-            <Route path="/lists" element={<div className="local-collection"><Lists /></div>} />
-            <Route path="/history" element={<div className="local-collection"><HistoryPage /></div>} />
-            <Route path="/settings" element={<LocalSettings />} />
-            <Route path="/watch/:slug" element={<ResumeLink />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+        {content}
       </main>
     </div>
   );

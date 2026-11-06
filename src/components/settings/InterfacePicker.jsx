@@ -3,7 +3,7 @@ import { useSettingsStore } from '../../stores/useSettingsStore';
 
 const choices = [
   { id: 'animer', title: 'Animer', description: 'L’interface actuelle du site : vert nuit, surfaces en verre et sélection illustrée.' },
-  { id: 'nartya', title: 'Nartya Anime', description: 'Violet sombre et corail, navigation compacte et grande bannière pour découvrir un anime.' },
+  { id: 'nartya', title: 'Nartya Anime', description: 'Une autre disposition : menu repliable, recherche en haut, carrousel Nartya et rangées d’anime défilantes.' },
 ];
 
 export default function InterfacePicker() {

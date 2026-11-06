@@ -8,7 +8,7 @@ Accueil avec sélection illustrée, recherche distincte, navigation regroupée e
 
 La version 1.6 ajoute une rangée « Récemment regardés » alimentée par l’historique local, des cartes de progression et un lecteur mieux encadré avec titre et langue. Les flèches déplacent la sélection visible entre liens, cartes et boutons ; Entrée active la sélection. Les champs de texte et sélecteurs gardent leurs commandes habituelles. Les dialogues limitent la navigation à leur contenu. Dans le lecteur, les flèches gauche/droite cherchent de 10 secondes, haut/bas règlent le volume et Entrée contrôle lecture/pause ; Tab permet de rejoindre les commandes.
 
-Dans Réglages → Interface du site, choisir **Animer** (l’apparence actuelle, conservée par défaut) ou **Nartya Anime** (violet sombre, accents corail, navigation compacte et bannière illustrée). Le choix s’applique immédiatement et reste enregistré dans le navigateur, sans changer les données de la bibliothèque. Les deux apparences conservent les réglages glass et de réduction des animations.
+Dans Réglages → Interface du site, choisir **Animer** (l’apparence actuelle, conservée par défaut) ou **Nartya Anime** (disposition distincte avec le carrousel Nartya, menu latéral repliable, recherche dans l’en-tête, rangées horizontales et fiche avec fond illustré). Le choix s’applique immédiatement et reste enregistré dans le navigateur, sans changer les données de la bibliothèque. Les deux apparences conservent les réglages glass et de réduction des animations.
 
 ## Fonctionnement
 

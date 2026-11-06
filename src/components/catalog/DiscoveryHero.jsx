@@ -2,11 +2,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ArrowDown, Sparkles } from "lucide-react";
 import selection from "./selection.json";
-import { useSettingsStore } from "../../stores/useSettingsStore";
 
 export default function DiscoveryHero() {
   const [selected, setSelected] = useState(0);
-  const nartya = useSettingsStore(s => s.webInterface === 'nartya');
   const item = selection.items[selected];
   return (
     <section className="discovery-hero" aria-label="La sélection Animer">
@@ -15,7 +13,7 @@ export default function DiscoveryHero() {
       </div>
       <div className="discovery-copy">
         <span className="discovery-label"><Sparkles size={13} /> LA SÉLECTION ANIMER</span>
-        <h2>{nartya ? item.title : <>Encore un<br /><em>épisode.</em></>}</h2>
+        <h2>Encore un<br /><em>épisode.</em></h2>
         <p>Des histoires qui restent.<br />Et la prochaine qui t’attend.</p>
         <div className="discovery-actions">
           <Link to={`/anime/${item.slug}`} className="discovery-primary">Découvrir l’anime <ArrowRight size={17} /></Link>

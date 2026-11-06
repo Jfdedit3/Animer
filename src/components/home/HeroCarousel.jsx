@@ -121,7 +121,7 @@ function HeroSlide({ anime, contentType, isActive, shouldLoad, onOpen, onPrimary
   );
 }
 
-export default function HeroCarousel({ items, contentType = "anime" }) {
+export default function HeroCarousel({ items, contentType = "anime", autoplay = true }) {
   const navigate = useNavigate();
   const [emblaRef, embla] = useEmblaCarousel({ loop: true, duration: 30 });
   const [selected, setSelected] = useState(0);
@@ -167,7 +167,7 @@ export default function HeroCarousel({ items, contentType = "anime" }) {
       lastSelectedRef.current = selected;
       remainingRef.current = null;
     }
-    if (!embla || paused) return;
+    if (!embla || paused || !autoplay) return;
     const remaining = remainingRef.current ?? AUTOPLAY_MS;
     const startedAt = Date.now();
     const id = setTimeout(() => {
@@ -178,7 +178,7 @@ export default function HeroCarousel({ items, contentType = "anime" }) {
       clearTimeout(id);
       remainingRef.current = Math.max(0, remaining - (Date.now() - startedAt));
     };
-  }, [embla, selected, paused]);
+  }, [embla, selected, paused, autoplay]);
 
   useEffect(() => {
     const node = rootRef.current;

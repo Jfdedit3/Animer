@@ -1,0 +1,21 @@
+{
+  "separate_shell_and_home_components": true,
+  "upstream_nartya_hero_carousel": true,
+  "collapsible_sidebar_and_groups": true,
+  "horizontal_rows_scroll": true,
+  "header_search_submits": true,
+  "real_local_history_and_favorites": true,
+  "distinct_detail_layout": true,
+  "mobile_menu_and_history_navigation": true,
+  "original_interface_restored_after_reload": true,
+  "library_preserved": true,
+  "responsive": [
+    320,
+    390,
+    768,
+    1024,
+    1440
+  ],
+  "page_errors": [],
+  "scope": "Built Worker with controlled catalogue and artwork; real local library data."
+}
