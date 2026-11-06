@@ -10,6 +10,7 @@ import "./index.css";
 import "./styles/yoru.css";
 import "./styles/glass.css";
 import "./styles/web.css";
+import "./styles/web-interfaces.css";
 import WebInstall from "./components/WebInstall.jsx";
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {

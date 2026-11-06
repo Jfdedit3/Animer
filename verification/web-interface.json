@@ -1,0 +1,17 @@
+{
+  "base": "http://127.0.0.1:8793/",
+  "current_interface_default": true,
+  "nartya_choice_applies_and_persists": true,
+  "return_to_current_interface_persists": true,
+  "library_unchanged": true,
+  "glass_and_motion_preferences_preserved": true,
+  "responsive": [
+    320,
+    390,
+    768,
+    1024,
+    1440
+  ],
+  "movies_still_absent": true,
+  "page_errors": []
+}

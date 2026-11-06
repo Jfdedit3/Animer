@@ -1,4 +1,5 @@
 import DiscoveryHero from "./components/catalog/DiscoveryHero";
+import InterfacePicker from "./components/settings/InterfacePicker";
 import { installDirectionalNavigation } from "./web/directionalNavigation";
 import { asCatalogue, asAnime, asEpisodes, asStream } from "./local/animesama";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
@@ -694,6 +695,7 @@ function LocalSettings() {
         Effacer les données du site supprime cette sauvegarde. Exportez-la pour
         la conserver ou changer d’appareil.
       </p>
+      <InterfacePicker />
       <div className="glass-panel">
         <h2>Apparence</h2>
         <label>
@@ -812,6 +814,7 @@ function LocalSettings() {
 }
 export default function App() {
   const { pathname } = useLocation();
+  const webInterface = useSettingsStore((s) => s.webInterface);
   useEffect(() => installDirectionalNavigation(), []);
   useEffect(() => { window.scrollTo({top: 0, behavior: "instant"}); }, [pathname]);
   const favoriteCount = useFavoritesStore((s) => s.slugs.size);
@@ -821,7 +824,7 @@ export default function App() {
     useFavoritesStore.getState().ensureLoaded();
   }, []);
   return (
-    <div className="local-app">
+    <div className="local-app" data-interface={webInterface}>
       <a className="local-skip" href="#contenu" onClick={(e) => {e.preventDefault();document.getElementById("contenu")?.focus();}}>Aller au contenu</a>
       <header className="local-topbar">
         <Link to="/" className="local-brand">

@@ -6,6 +6,7 @@ import { applyTheme, applyReduceMotion, DEFAULT_PRESET, DEFAULT_CUSTOM_COLOR } f
 const STORAGE_KEY = "nartya_settings";
 
 const DEFAULTS = {
+  webInterface: "animer",
   glassEffects: true,
   performanceMode: "auto",
   defaultLanguage: "vostfr",
@@ -47,6 +48,7 @@ function load() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULTS };
     const stored = { ...DEFAULTS, ...JSON.parse(raw) };
+    if (!["animer", "nartya"].includes(stored.webInterface)) stored.webInterface = DEFAULTS.webInterface;
     if (stored.prioritySource !== "auto" && !isOpaqueSourceKey(stored.prioritySource)) {
       stored.prioritySource = DEFAULTS.prioritySource;
     }
