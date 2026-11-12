@@ -180,6 +180,25 @@ export function parseEpisodes(script) {
   if (count > 5000) throw new Error("Liste d’épisodes trop volumineuse.");
   return { sources, count };
 }
+export function parseInlineEpisodes(html) {
+  const $ = load(html);
+  // The current site puts literal epsN arrays in a server-rendered BDD script.
+  // Read those declarations as data; never run the player scripts or their eval calls.
+  const bdd = $('script[data-source="bdd"]:not([src])').toArray();
+  const candidates = bdd.length ? bdd : $('script:not([src])').toArray();
+  const sources = new Map();
+  for (const node of candidates) {
+    const script = $(node).html() || '';
+    if (!/\b(?:var|let|const)\s+eps\d+\s*=/.test(script)) continue;
+    let parsed;
+    try { parsed = parseEpisodes(script); }
+    catch { continue; }
+    for (const source of parsed.sources) if (!sources.has(source.id)) sources.set(source.id, source);
+  }
+  if (!sources.size) return null;
+  const entries = [...sources.values()];
+  return { sources: entries, count: Math.max(...entries.map(source => source.urls.length)) };
+}
 async function sourceText(path, fetcher, referer = ANIME_SAMA + "/") {
   const url = new URL(path, ANIME_SAMA);
   if (url.origin !== ANIME_SAMA) throw new Error("Source non autorisée.");
@@ -251,14 +270,17 @@ async function episodeData(slug, season, lang, fetcher) {
     const scripts = $("script[src]")
       .map((_, el) => $(el).attr("src"))
       .get();
-    const relative = scripts.find((src) =>
-      /^episodes\.js(?:\?[^#]*)?$/.test(src),
-    );
-    if (!relative)
-      throw new Error("Cette saison n’expose pas de liste de lecteurs.");
-    const parsed = parseEpisodes(
-      await sourceText(path + relative, fetcher, ANIME_SAMA + path),
-    );
+    let parsed = parseInlineEpisodes(page);
+    if (!parsed) {
+      const episodeUrl = scripts.map(src => {
+        try {
+          const url = new URL(src, ANIME_SAMA + path);
+          return url.origin === ANIME_SAMA && url.pathname === path + 'episodes.js' ? url : null;
+        } catch { return null; }
+      }).find(Boolean);
+      if (!episodeUrl) throw new Error("Cette saison n’expose pas de liste de lecteurs.");
+      parsed = parseEpisodes(await sourceText(episodeUrl.href, fetcher, ANIME_SAMA + path));
+    }
     const languages = [];
     for (const a of $(".ct-langues a").toArray()) {
       const value = $(a)

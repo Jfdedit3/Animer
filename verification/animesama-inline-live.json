@@ -1,0 +1,13 @@
+{
+  "source": "https://anime-sama.to/",
+  "season": "saison1",
+  "language": "vostfr",
+  "live_http_requests": true,
+  "titles": [
+    {"slug": "frieren", "episodes": 28, "firstEpisodeReaders": 3},
+    {"slug": "jujutsu-kaisen", "episodes": 24, "firstEpisodeReaders": 4},
+    {"slug": "les-carnets-de-lapothicaire", "episodes": 24, "firstEpisodeReaders": 3}
+  ],
+  "frierenFirstEpisodeSecondReader": {"kind": "video", "format": "hls"},
+  "scope": "Live episode lists and first episode source resolution. Does not assert video decoding or availability of every host."
+}

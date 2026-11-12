@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseCatalogue,parseAnime,parseEpisodes,extractPublicVideo,handleAnimeSama,resetAnimeSamaCache,animeSamaStream} from '../server/animesama.js';
+import {parseCatalogue,parseAnime,parseEpisodes,parseInlineEpisodes,animeSamaEpisodes,extractPublicVideo,handleAnimeSama,resetAnimeSamaCache,animeSamaStream} from '../server/animesama.js';
 import {openTicket} from '../server/security.js';
 const detail=`<h1 id="titreOeuvre">L’elfe &amp; le voyage</h1><meta property="og:image" content="https://images.example.com/cover.jpg"><p id="synopsisText">Synopsis français.</p><script>/* panneauAnime('nom','saison1/vostfr'); */ panneauAnime('Saison 1','saison1/vostfr'); panneauAnime('Saison 1','saison1/vf'); panneauAnime('Saison 2','saison2/vostfr');</script>`;
 const episodes=`var eps1=['https://player.example.com/embed/first', '', 'https://player.example.com/embed/third']; var eps2=['https://other.example.com/embed/first']; globalThis.notExecuted=true;`;
@@ -15,6 +15,39 @@ test('Anime-Sama seasons read literal calls without executing scripts or treatin
 test('episode arrays preserve gaps and source numbers and reject non-public URLs without executing code',()=>{
  const result=parseEpisodes(episodes);assert.equal(result.count,3);assert.equal(result.sources[0].urls[1],null);assert.equal(result.sources[1].id,'eps2');assert.equal(globalThis.notExecuted,undefined);
  const bad=parseEpisodes("var eps1=['http://127.0.0.1/secret','https://user:pass@player.example.com/file'];");assert.deepEqual(bad.sources[0].urls,[null,null]);
+});
+test('current BDD scripts expose inline readers without executing player or injected code',()=>{
+ const html=`<script>var eps9=['https://ads.example.com/unrelated'];</script><script data-source="bdd">${episodes}</script><script>eval('throw new Error("must not run")');</script>`;
+ const data=parseInlineEpisodes(html);
+ assert.equal(data.count,3);assert.deepEqual(data.sources.map(source=>source.id),['eps1','eps2']);
+ assert.equal(data.sources[0].urls[1],null);assert.equal(globalThis.notExecuted,undefined);
+ assert.equal(parseInlineEpisodes('<script data-source="bdd">var eps1 = makePrivateRequest();</script>'),null);
+ assert.equal(parseInlineEpisodes('<script>/* var eps1=["https://ads.example.com/comment"] */</script>'),null);
+});
+test('episode and stream routes use current inline lists without requesting the removed episodes.js',async()=>{
+ resetAnimeSamaCache();const calls=[];
+ const fetcher=async(url,options)=>{
+  calls.push({url,options});
+  if(url.startsWith('https://anime-sama.to/'))return new Response(`<script data-source="bdd">${episodes}</script>`);
+  return new Response('<video src="https://cdn.example.com/movie.mp4"></video>');
+ };
+ const list=await animeSamaEpisodes('voyage','saison1','vostfr',fetcher);
+ assert.equal(list.totalEpisodes,3);assert.deepEqual(list.episodes[0].readers.map(reader=>reader.id),['eps1','eps2']);assert.equal(list.episodes[1].readers.length,0);
+ const stream=await animeSamaStream({slug:'voyage',season:'saison1',lang:'vostfr',episode:3,reader:'eps1'},{STREAM_SIGNING_KEY:key},fetcher);
+ assert.equal(stream.kind,'video');assert.ok(calls.some(call=>call.url==='https://player.example.com/embed/third'));
+ assert.equal(calls.filter(call=>call.url.startsWith('https://anime-sama.to/')).length,1);
+ assert.ok(calls.every(call=>!call.url.includes('episodes.js')));
+});
+test('legacy episode file paths resolve only inside the requested season and source origin',async()=>{
+ for(const src of ['episodes.js?filever=123','./episodes.js?v=1','/catalogue/voyage/saison1/vostfr/episodes.js?v=2']){
+  resetAnimeSamaCache();const calls=[];
+  const data=await animeSamaEpisodes('voyage','saison1','vostfr',async url=>{calls.push(url);return new Response(url.includes('episodes.js')?episodes:`<script src="${src}"></script>`);});
+  assert.equal(data.totalEpisodes,3);assert.equal(calls.length,2);assert.match(calls[1],/^https:\/\/anime-sama\.to\/catalogue\/voyage\/saison1\/vostfr\/episodes\.js\?/);
+ }
+ for(const src of ['https://other.example.com/episodes.js','../episodes.js','/other/episodes.js']){
+  resetAnimeSamaCache();let count=0;
+  await assert.rejects(()=>animeSamaEpisodes('voyage','saison1','vostfr',async()=>{count++;return new Response(`<script src="${src}"></script>`);}));assert.equal(count,1);
+ }
 });
 test('video extraction uses public player source attributes and JW files, without accepting scripts as URLs',()=>{
  assert.equal(extractPublicVideo('<video><source src="https://cdn.example.com/a.mp4?x=1&amp;y=2"></video>','https://player.example.com/'),'https://cdn.example.com/a.mp4?x=1&y=2');

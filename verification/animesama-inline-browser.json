@@ -1,0 +1,23 @@
+[
+  {
+    "slug": "frieren",
+    "interface": "animer",
+    "visibleEpisodes": 28,
+    "readerChoices": 3,
+    "page_errors": []
+  },
+  {
+    "slug": "jujutsu-kaisen",
+    "interface": "nartya",
+    "visibleEpisodes": 24,
+    "readerChoices": 4,
+    "page_errors": []
+  },
+  {
+    "slug": "les-carnets-de-lapothicaire",
+    "interface": "animer",
+    "visibleEpisodes": 24,
+    "readerChoices": 3,
+    "page_errors": []
+  }
+]
