@@ -1,0 +1,10 @@
+{
+  "appimage_executes_without_fuse_mount": true,
+  "same_stable_origin": true,
+  "saved_interface_after_restart": true,
+  "imported_favorites_and_progress_after_restart": true,
+  "media_key_persisted": true,
+  "renderer_node_disabled": true,
+  "live_readers_listed": true,
+  "scope": "Actual AppImage with extract-and-run on Xorg dummy; --no-sandbox/--disable-gpu are QA-only flags."
+}

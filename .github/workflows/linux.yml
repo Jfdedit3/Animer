@@ -1,0 +1,25 @@
+name: Construire Animer Linux
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Animer-Linux-x86_64
+          path: |
+            dist/linux/*.AppImage
+            dist/linux/*.deb
+            dist/linux/SHA256SUMS.txt
+            dist/linux/linux-artifacts.json

@@ -51,6 +51,7 @@ const Favorites = lazy(() => import("./pages/FavoritesPage"));
 const Lists = lazy(() => import("./pages/MyListsPage"));
 const HistoryPage = lazy(() => import("./pages/HistoryPage"));
 const Player = lazy(() => import("./local/Player"));
+const LinuxDownloads = lazy(() => import("./pages/LinuxDownloads"));
 const nav = [
   ["/", "Accueil", Home],
   ["/search", "Recherche", Search],
@@ -58,6 +59,7 @@ const nav = [
   ["/lists", "Listes", List],
   ["/history", "Historique", History],
   ["/settings", "Réglages", Settings],
+  ["/downloads", "Application Linux", Download],
 ];
 function Busy() {
   return (
@@ -701,6 +703,7 @@ function LocalSettings() {
         Effacer les données du site supprime cette sauvegarde. Exportez-la pour
         la conserver ou changer d’appareil.
       </p>
+      <div className="glass-panel"><h2>Application Linux</h2><p>Retrouve Animer dans une application de bureau pour Linux x86_64.</p><Link to="/downloads">Télécharger l’AppImage ou le paquet .deb →</Link></div>
       <InterfacePicker />
       <div className="glass-panel">
         <h2>Apparence</h2>
@@ -838,6 +841,7 @@ export default function App() {
             <Route path="/lists" element={<div className="local-collection"><Lists /></div>} />
             <Route path="/history" element={<div className="local-collection"><HistoryPage /></div>} />
             <Route path="/settings" element={<LocalSettings />} />
+            <Route path="/downloads" element={<LinuxDownloads />} />
             <Route path="/watch/:slug" element={<ResumeLink />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

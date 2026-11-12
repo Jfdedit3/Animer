@@ -49,6 +49,31 @@ test('legacy episode file paths resolve only inside the requested season and sou
   await assert.rejects(()=>animeSamaEpisodes('voyage','saison1','vostfr',async()=>{count++;return new Response(`<script src="${src}"></script>`);}));assert.equal(count,1);
  }
 });
+test('opaque episode references resolve only the selected source using its public page token',async()=>{
+ resetAnimeSamaCache();const calls=[],token='public.page-token-fixture';
+ const fetcher=async(url,options)=>{
+  calls.push({url,options});const u=new URL(url);
+  if(u.pathname==='/api/lien.php'){
+   assert.equal(u.searchParams.get('j'),token);assert.equal(u.searchParams.get('l'),'24');
+   assert.equal(options.headers.Referer,'https://anime-sama.to/catalogue/voyage/saison1/vostfr/');
+   return Response.json({u:'https://player.example.com/chosen'});
+  }
+  if(u.hostname==='anime-sama.to')return new Response(`<script data-source="bdd">var eps1=['lien:23','lien:24'];var eps2=['lien:25'];var epsJeton='${token}';</script>`);
+  assert.equal(url,'https://player.example.com/chosen');return new Response('<video src="https://cdn.example.com/video.mp4"></video>');
+ };
+ const list=await animeSamaEpisodes('voyage','saison1','vostfr',fetcher);assert.equal(list.episodes[0].readers.length,2);assert.equal(JSON.stringify(list).includes(token),false);
+ assert.equal(calls.length,1);
+ const stream=await animeSamaStream({slug:'voyage',season:'saison1',lang:'vostfr',episode:2,reader:'eps1'},{STREAM_SIGNING_KEY:key},fetcher);
+ assert.equal(stream.kind,'video');assert.equal(calls.filter(call=>call.url.includes('/api/lien.php')).length,1);
+ assert.ok(calls.every(call=>!call.options.headers.Cookie&&!call.options.headers.Authorization));
+});
+test('opaque references cannot inject requests and resolved non-public addresses are rejected',async()=>{
+ assert.deepEqual(parseEpisodes("var eps1=['lien:0','lien:../../api','lien:1?j=other','lien:42'];").sources[0].urls,[null,null,null,'lien:42']);
+ resetAnimeSamaCache();let calls=0;
+ await assert.rejects(()=>animeSamaStream({slug:'voyage',season:'saison1',lang:'vostfr',episode:1},{STREAM_SIGNING_KEY:key},async url=>{
+  calls++;return url.includes('/api/lien.php')?Response.json({u:'http://127.0.0.1/private'}):new Response('<script data-source="bdd">var eps1=["lien:42"];var epsJeton="public.token";</script>');
+ }));assert.equal(calls,2);
+});
 test('video extraction uses public player source attributes and JW files, without accepting scripts as URLs',()=>{
  assert.equal(extractPublicVideo('<video><source src="https://cdn.example.com/a.mp4?x=1&amp;y=2"></video>','https://player.example.com/'),'https://cdn.example.com/a.mp4?x=1&y=2');
  assert.equal(extractPublicVideo("player.setup({sources:[{file:'https://cdn.example.com/a.m3u8'}]});",'https://player.example.com/'),'https://cdn.example.com/a.m3u8');

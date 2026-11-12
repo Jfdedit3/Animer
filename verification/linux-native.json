@@ -1,0 +1,20 @@
+{
+  "packaged_deb_runtime": true,
+  "native_x11_display": true,
+  "stable_origin": "http://animer.localhost",
+  "node_isolated": true,
+  "embedded_relay": true,
+  "live_episodes": 28,
+  "live_readers": 3,
+  "native_mp4_decode": {
+    "ready": 4,
+    "duration": 180,
+    "time": 0.314875,
+    "error": null
+  },
+  "profile_survived_restart": true,
+  "json_backup_import": true,
+  "interface_saved": true,
+  "errors": [],
+  "scope": "Debian package extracted and run on Xorg dummy, --no-sandbox/--disable-gpu only for QA. Generated MP4 blob tests native decoding; provider films and physical GPU not tested."
+}

@@ -25,7 +25,7 @@ Dans Réglages → Interface du site, choisir **Animer** (l’apparence actuelle
 
 Les pages Anime-Sama, leurs listes `epsN` intégrées dans les scripts `data-source="bdd"`, et les anciens fichiers `episodes.js?filever=…` sont publics mais n’envoient pas d’autorisation CORS pour GitHub Pages. Un serveur est donc nécessaire ; GitHub Pages héberge l’interface statique et le relais récupère les données à la demande, avec un cache de dix minutes.
 
-Le relais expose `/api/animesama/catalog`, `/api/animesama/anime/:slug`, `/api/animesama/anime/:slug/episodes?season=…&lang=…` et `POST /api/animesama/resolve`. La résolution accepte uniquement des coordonnées d’épisode, relit les listes de la source (format inline actuel ou ancien fichier externe, sans exécuter de JavaScript distant) et tente d’extraire le flux public du lecteur choisi. Les URL média passent par des capacités chiffrées limitées dans le temps ; le relais réécrit les playlists HLS et prend en charge les plages MP4. Aucun compte Nartya ni script distant exécuté pour analyser les listes. L’extraction n’enlève aucun DRM ou contrôle de compte.
+Le relais expose `/api/animesama/catalog`, `/api/animesama/anime/:slug`, `/api/animesama/anime/:slug/episodes?season=…&lang=…` et `POST /api/animesama/resolve`. La résolution accepte uniquement des coordonnées d’épisode, relit les listes de la source (format inline actuel, références publiques `lien:…` résolues à la demande, ou ancien fichier externe, sans exécuter de JavaScript distant) et tente d’extraire le flux public du lecteur choisi. Les URL média passent par des capacités chiffrées limitées dans le temps ; le relais réécrit les playlists HLS et prend en charge les plages MP4. Aucun compte Nartya ni script distant exécuté pour analyser les listes. L’extraction n’enlève aucun DRM ou contrôle de compte.
 
 En cas de refus ou de lecteur non reconnu, le lecteur public d’origine est proposé dans une iframe protégée. Certains fournisseurs peuvent refuser leur intégration : choisissez alors un autre lecteur. La progression d’une iframe ne peut pas être mesurée ; marquez l’épisode vu manuellement.
 
@@ -74,3 +74,15 @@ Le service worker met en cache la coque et les ressources. Il met aussi en cache
 Interface et composants de bibliothèque dérivés du client public [Nartya](https://github.com/NartyaTeam/nartya), licence ISC. Le client Android d’origine n’est pas modifié. Le relais Sites est accessible publiquement avec l’accord du propriétaire.
 
 [LICENSE](LICENSE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+
+## Application Linux
+
+La page `#/downloads` propose l’AppImage et le paquet Debian/Ubuntu pour **Linux x86_64**. Les fichiers sont hébergés dans les releases GitHub et les mêmes liens sont accessibles depuis GitHub Pages et le site ChatGPT.
+
+L’application embarque l’interface et le relais Node, sans serveur à installer. Le contenu utilise une origine locale virtuelle stable ; aucun port TCP n’est ouvert. La bibliothèque et les réglages restent dans le profil Electron de l’utilisateur, séparément des données du navigateur. Pour migrer la bibliothèque du site, exporter son JSON puis l’importer dans l’application. Internet reste nécessaire pour récupérer les épisodes et lire les flux.
+
+Construction : `npm ci` puis `npm run build:linux` (Linux, Node 24). Le packager est isolé dans `desktop/` et utilise Electron 44.4.3. Les résultats et leurs empreintes SHA-256 sont écrits dans `dist/linux/`. Le workflow manuel **Construire Animer Linux** reproduit cette construction. Pour utiliser une distribution Electron déjà extraite, passer `--config.electronDist=/chemin/du/runtime` à electron-builder.
+
+L’AppImage peut demander FUSE selon la distribution ; `--appimage-extract-and-run` permet de l’exécuter sans montage FUSE. Installer le `.deb` avec `sudo apt install ./Animer-1.11.0-linux-x86_64.deb`. Les paquets ne sont pas des builds ARM. Aucun démarrage automatique ni suppression des données du navigateur n’est effectué.
+
+Vérification Linux de cette version : le `.deb` a été extrait et exécuté sur un affichage Xorg de test, et l’AppImage lancé avec `--appimage-extract-and-run`. Le test a vérifié le relais embarqué, les lecteurs Anime-Sama actuels, le décodage natif d’un MP4 généré et l’import JSON. Après relancement, les favoris, la progression et le choix d’interface sont conservés. Les options `--no-sandbox` et `--disable-gpu` utilisées dans cet environnement de test ne sont pas ajoutées au lanceur distribué. GPU physique et compatibilité de toutes les distributions non vérifiés. Résultats : `verification/linux-native.json` et `verification/linux-appimage.json`.

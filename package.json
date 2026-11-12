@@ -1,6 +1,6 @@
 {
   "name": "animer-web",
-  "version": "1.10.1",
+  "version": "1.11.0",
   "private": true,
   "type": "module",
   "description": "Version web et PWA du client Anime Yoru, dérivée de Nartya (ISC).",
@@ -13,7 +13,8 @@
     "preview": "node scripts/serve.mjs",
     "test": "node --test test/web-*.test.mjs",
     "test:upstream": "node --test test/audio-track.test.mjs test/hls-detection.test.mjs test/quality-levels.test.mjs test/session-guards.test.mjs test/yoru-experience.test.mjs test/anime4k-mobile.test.mjs test/anime4k-diagnostics.test.mjs",
-    "deploy:cloudflare": "npm run build && wrangler deploy"
+    "deploy:cloudflare": "npm run build && wrangler deploy",
+    "build:linux": "npm run build && node scripts/prepare-linux.mjs && npm --prefix desktop ci && desktop/node_modules/.bin/electron-builder --linux AppImage deb --x64 --config desktop/builder.json --publish never && node scripts/linux-checksums.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

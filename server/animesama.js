@@ -155,9 +155,11 @@ export function parseEpisodes(script) {
     throw new Error("Liste d’épisodes trop volumineuse.");
   const ast = parse(script, { ecmaVersion: "latest" }),
     sources = [];
+  let linkToken;
   for (const statement of ast.body) {
     if (statement.type !== "VariableDeclaration") continue;
     for (const decl of statement.declarations) {
+      if (decl.id?.name === 'epsJeton' && decl.init?.type === 'Literal' && typeof decl.init.value === 'string' && /^[a-zA-Z0-9._-]{1,600}$/.test(decl.init.value)) linkToken = decl.init.value;
       if (
         !/^eps\d+$/.test(decl.id?.name || "") ||
         decl.init?.type !== "ArrayExpression"
@@ -165,6 +167,7 @@ export function parseEpisodes(script) {
         continue;
       const urls = decl.init.elements.map((el) => {
         if (el?.type !== "Literal" || typeof el.value !== "string") return null;
+        if (/^lien:[1-9]\d{0,15}$/.test(el.value)) return el.value;
         try {
           return publicHttps(el.value.trim()).href;
         } catch {
@@ -178,7 +181,7 @@ export function parseEpisodes(script) {
     throw new Error("Aucun lecteur public reconnu pour cette saison.");
   const count = Math.max(...sources.map((s) => s.urls.length));
   if (count > 5000) throw new Error("Liste d’épisodes trop volumineuse.");
-  return { sources, count };
+  return { sources, count, ...(linkToken ? { linkToken } : {}) };
 }
 export function parseInlineEpisodes(html) {
   const $ = load(html);
@@ -187,17 +190,19 @@ export function parseInlineEpisodes(html) {
   const bdd = $('script[data-source="bdd"]:not([src])').toArray();
   const candidates = bdd.length ? bdd : $('script:not([src])').toArray();
   const sources = new Map();
+  let linkToken;
   for (const node of candidates) {
     const script = $(node).html() || '';
     if (!/\b(?:var|let|const)\s+eps\d+\s*=/.test(script)) continue;
     let parsed;
     try { parsed = parseEpisodes(script); }
     catch { continue; }
+    if (parsed.linkToken) linkToken = parsed.linkToken;
     for (const source of parsed.sources) if (!sources.has(source.id)) sources.set(source.id, source);
   }
   if (!sources.size) return null;
   const entries = [...sources.values()];
-  return { sources: entries, count: Math.max(...entries.map(source => source.urls.length)) };
+  return { sources: entries, count: Math.max(...entries.map(source => source.urls.length)), ...(linkToken ? { linkToken } : {}) };
 }
 async function sourceText(path, fetcher, referer = ANIME_SAMA + "/") {
   const url = new URL(path, ANIME_SAMA);
@@ -346,7 +351,18 @@ export async function animeSamaStream(
       ? choices.find((s) => s.id === reader)
       : choices[0];
   if (!source) throw new Error("Lecteur indisponible pour cet épisode.");
-  const embed = publicHttps(source.urls[number - 1]).href;
+  let address = source.urls[number - 1];
+  if (/^lien:[1-9]\d{0,15}$/.test(address)) {
+    if (!data.linkToken) throw new Error('La source ne fournit pas de session publique pour ce lecteur. Recharge la fiche.');
+    const params = new URLSearchParams({ j: data.linkToken, l: address.slice(5) });
+    const value = JSON.parse(await sourceText('/api/lien.php?' + params, fetcher, data.referer));
+    if (!value.u) {
+      if (value.erreur === 'expire') cache.delete('episodes:' + new URL(data.referer).pathname);
+      throw new Error(value.erreur === 'expire' ? 'Le lien de lecteur a expiré. Recharge la fiche.' : 'Ce lecteur ne propose pas de lien disponible.');
+    }
+    address = value.u;
+  }
+  const embed = publicHttps(address).href;
   let media = /\.(mp4|m3u8|webm)(?:[?#]|$)/i.test(embed) ? embed : null;
   if (!media) {
     try {

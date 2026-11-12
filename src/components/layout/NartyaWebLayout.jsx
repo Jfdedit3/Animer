@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Search, Home, Heart, List, History, Settings, Compass, Library, ChevronDown, ShieldCheck, PanelLeftClose, Moon } from 'lucide-react';
+import { Menu, X, Search, Home, Heart, List, History, Settings, Compass, Library, ChevronDown, ShieldCheck, PanelLeftClose, Moon, Download } from 'lucide-react';
 
 const groups = [
   { name: 'Parcourir', Icon: Compass, items: [['/', 'Accueil', Home], ['/search', 'Recherche', Search]] },
@@ -43,7 +43,7 @@ export default function NartyaWebLayout({ children, favoriteCount }) {
       <div className="nartya-sidebar-heading"><span>ANIME</span><button className="nartya-rail-toggle" aria-label={rail ? 'Déplier la navigation' : 'Replier la navigation'} onClick={() => setRail(value => !value)}><PanelLeftClose size={18} /></button><button className="nartya-drawer-close" aria-label="Fermer le menu" onClick={() => setDrawer(false)}><X size={22} /></button></div>
       <nav aria-label="Navigation principale">
         {groups.map(({ name, Icon, items }) => <section className="nartya-nav-group" key={name}><button aria-expanded={!closed[name]} onClick={() => { if (rail) setRail(false); setClosed(current => ({ ...current, [name]: !current[name] })); }} title={name}><Icon size={18} /><span>{name}</span><ChevronDown size={14} /></button>{!closed[name] && <div>{items.map(item)}</div>}</section>)}
-        <div className="nartya-settings-link">{item(['/settings', 'Réglages', Settings])}</div>
+        <div className="nartya-settings-link">{item(['/downloads', 'Application Linux', Download])}{item(['/settings', 'Réglages', Settings])}</div>
       </nav>
       <Link to="/lists" className="nartya-local-profile"><ShieldCheck size={21} /><span><strong>Ma bibliothèque</strong><small>Sur cet appareil</small></span></Link>
     </aside>
