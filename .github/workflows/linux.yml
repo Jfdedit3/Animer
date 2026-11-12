@@ -1,11 +1,20 @@
 name: Construire Animer Linux
 on:
+  push:
+    branches: [linux-release-1.11.0]
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publier la release Linux après construction
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
   linux:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,6 +24,8 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build:linux
+      - name: Préparer le code source
+        run: git archive --format=tar.gz --prefix=animer-linux/ --output=dist/linux/animer-linux-source.tar.gz HEAD
       - uses: actions/upload-artifact@v4
         with:
           name: Animer-Linux-x86_64
@@ -23,3 +34,23 @@ jobs:
             dist/linux/*.deb
             dist/linux/SHA256SUMS.txt
             dist/linux/linux-artifacts.json
+            dist/linux/animer-linux-source.tar.gz
+      - name: Publier les fichiers Linux
+        if: github.event_name == 'push' || inputs.publish_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          VERSION=$(node -p 'require("./package.json").version')
+          TAG="v${VERSION}-linux"
+          if gh release view "$TAG" --json isDraft --jq '.isDraft' > /tmp/animer-release-draft; then
+            if [ "$(cat /tmp/animer-release-draft)" != true ]; then
+              echo "Cette version est déjà publique ; ses fichiers ne seront pas remplacés."
+              exit 1
+            fi
+          else
+            gh release create "$TAG" --draft --target "$GITHUB_SHA" --title "Animer ${VERSION} — Linux" --notes "AppImage et paquet Debian/Ubuntu pour Linux x86_64."
+          fi
+          gh release edit "$TAG" --target "$GITHUB_SHA"
+          gh release upload "$TAG" "dist/linux/Animer-${VERSION}-linux-x86_64.AppImage" "dist/linux/Animer-${VERSION}-linux-x86_64.deb" dist/linux/SHA256SUMS.txt dist/linux/linux-artifacts.json dist/linux/animer-linux-source.tar.gz --clobber
+          gh release edit "$TAG" --draft=false --latest=false
