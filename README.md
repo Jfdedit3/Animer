@@ -19,7 +19,7 @@ Dans Réglages → Interface du site, choisir **Animer** (l’apparence actuelle
 - Favoris, listes, épisodes vus et historique conservés dans `localStorage` sur cet appareil.
 - Export/import JSON depuis Réglages. L’import remplace la bibliothèque locale. Effacer les données du site supprime la bibliothèque : exportez-la pour la conserver.
 - Préférences d’interface persistantes : effet glass et réduction des animations.
-- Aucune synchronisation de compte, aucun appel Supabase, aucun jeton de compte envoyé.
+- Compte facultatif par code reçu par e-mail. La page Mon compte permet de sauvegarder et de restaurer la bibliothèque à la demande.
 
 ## Anime-Sama et lecteurs vidéo
 
@@ -59,15 +59,23 @@ npm run build:pages
 npm run preview:pages
 ```
 
-La prévisualisation statique se trouve sur `http://127.0.0.1:4175/Animer/`. Aucune clé Supabase ni variable secrète n’est nécessaire. Les tests hérités couvrent aussi des utilitaires et le relais serveur conservés dans les sources ; cela ne signifie pas que les fonctions de compte du client d’origine sont exposées dans le site public.
+La prévisualisation statique se trouve sur `http://127.0.0.1:4175/Animer/`. Pour activer les comptes en local, renseignez les deux variables Supabase dans `.env` avant de lancer Vite.
 
 ## GitHub Pages
 
 Le workflow `.github/workflows/pages.yml` construit `dist/pages/` et publie automatiquement chaque push sur `main`. Le dépôt utilise **Settings → Pages → GitHub Actions**.
 
-Les ressources, le manifeste et le service worker sont limités à `/Animer/`. La navigation utilise des hash (`/Animer/#/favorites`) et ne nécessite pas de réécriture serveur. Les anciennes adresses `#/login` retournent à l’accueil ; il n’y a plus de parcours OAuth, captcha ni page de connexion.
+Les ressources, le manifeste et le service worker sont limités à `/Animer/`. La navigation utilise des hash (`/Animer/#/favorites`) et ne nécessite pas de réécriture serveur. Les anciennes adresses `#/login` redirigent vers `#/account`.
 
 Le service worker met en cache la coque et les ressources. Il met aussi en cache le catalogue de secours ; les métadonnées à jour nécessitent Internet. Il ne télécharge pas les épisodes. La bibliothèque locale reste accessible depuis les pages déjà chargées et la coque en cache.
+
+## Activer les comptes Animer
+
+1. Créez un projet Supabase dédié à Animer et exécutez la [migration de sauvegarde](supabase/migrations/202611170001_animer_library_backups.sql) dans son éditeur SQL.
+2. Dans Authentication, activez la connexion par e-mail et la création de comptes. Dans le [modèle Magic Link](https://supabase.com/docs/guides/auth/auth-email-passwordless#with-otp), remplacez le lien par un code `{{ .Token }}` et utilisez un code de six chiffres. Configurez le [serveur SMTP](https://supabase.com/docs/guides/auth/auth-smtp) pour livrer les codes aux utilisateurs.
+3. Dans GitHub, ouvrez **Settings → Secrets and variables → Actions → Variables**. Ajoutez `ANIMER_SUPABASE_URL` (URL du projet Supabase) et `ANIMER_SUPABASE_PUBLISHABLE_KEY` (clé publique commençant par `sb_publishable_`). Relancez le workflow **Publier sur GitHub Pages**. Pour Vite en local, les noms correspondants ont le préfixe `VITE_`, comme dans `.env.example`.
+
+La page Mon compte fonctionne sur GitHub Pages et dans les builds configurés avec ces variables. Chaque compte dispose d’une sauvegarde privée, protégée par des règles PostgreSQL fondées sur son identifiant. Sauvegarder remplace la copie en ligne. Restaurer remplace les favoris, listes, progrès et historique locaux. Le catalogue et les fonctionnalités locales restent accessibles sans compte.
 
 ## Origine et licence
 
