@@ -25,6 +25,8 @@ jobs:
       - run: npm run build:pages
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_ANIMER_SUPABASE_URL: ${{ vars.ANIMER_SUPABASE_URL }}
+          VITE_ANIMER_SUPABASE_PUBLISHABLE_KEY: ${{ vars.ANIMER_SUPABASE_PUBLISHABLE_KEY }}
           VITE_RELAY_URL: ${{ vars.ANIMER_RELAY_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:

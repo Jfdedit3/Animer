@@ -30,6 +30,7 @@ import {
   ArrowUpRight,
   ShieldCheck,
   Moon,
+  UserRound,
 } from "lucide-react";
 import { publicCatalog, publicAnime, publicEpisodes } from "./local/catalog";
 import { exportLocalData, importLocalData, LOCAL_USER } from "./local/database";
@@ -47,6 +48,7 @@ import { getProvider, saveProvider } from "./providers/registry";
 import { safeProviderUrl } from "./web/urls";
 import { toast } from "./lib/toast";
 import { getWatchHistory } from "./api/history";
+const AccountPage = lazy(() => import("./pages/AccountPage"));
 const Favorites = lazy(() => import("./pages/FavoritesPage"));
 const Lists = lazy(() => import("./pages/MyListsPage"));
 const HistoryPage = lazy(() => import("./pages/HistoryPage"));
@@ -59,6 +61,7 @@ const nav = [
   ["/lists", "Listes", List],
   ["/history", "Historique", History],
   ["/settings", "Réglages", Settings],
+  ["/account", "Mon compte", UserRound],
   ["/downloads", "Application Linux", Download],
 ];
 function Busy() {
@@ -704,6 +707,7 @@ function LocalSettings() {
         la conserver ou changer d’appareil.
       </p>
       <div className="glass-panel"><h2>Application Linux</h2><p>Retrouve Animer dans une application de bureau pour Linux x86_64.</p><Link to="/downloads">Télécharger l’AppImage ou le paquet .deb →</Link></div>
+      <div className="glass-panel"><h2>Mon compte</h2><Link to="/account">Connexion et sauvegarde en ligne →</Link></div>
       <InterfacePicker />
       <div className="glass-panel">
         <h2>Apparence</h2>
@@ -840,6 +844,8 @@ export default function App() {
             <Route path="/favorites" element={<div className="local-collection"><Favorites /></div>} />
             <Route path="/lists" element={<div className="local-collection"><Lists /></div>} />
             <Route path="/history" element={<div className="local-collection"><HistoryPage /></div>} />
+            <Route path="/account" element={<AccountPage />} />
+            <Route path="/login" element={<Navigate to="/account" replace />} />
             <Route path="/settings" element={<LocalSettings />} />
             <Route path="/downloads" element={<LinuxDownloads />} />
             <Route path="/watch/:slug" element={<ResumeLink />} />
