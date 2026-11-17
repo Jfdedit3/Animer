@@ -37,6 +37,7 @@ export default function NartyaWebLayout({ children, favoriteCount }) {
       <form className="nartya-header-search" role="search" onSubmit={event => { event.preventDefault(); navigate('/search' + (query.trim() ? '?q=' + encodeURIComponent(query.trim()) : '')); }}><Search size={17} /><input aria-label="Rechercher dans le catalogue" placeholder="Rechercher un anime…" value={query} onChange={event => setQuery(event.target.value)} /><button type="submit" aria-label="Lancer la recherche">Entrée ↵</button></form>
       <Link to="/search" className="nartya-mobile-search" aria-label="Rechercher un anime"><Search size={21} /></Link>
       <Link to="/favorites" className="nartya-top-library"><Heart size={17} /><span>Ma collection</span></Link>
+      <NavLink to="/account" className="nartya-top-account"><UserRound size={17} aria-hidden="true" /><span>Mon compte</span></NavLink>
     </header>
     {drawer && <button className="nartya-drawer-backdrop" aria-label="Fermer le menu" onClick={() => setDrawer(false)} />}
     <aside ref={sidebar} className="nartya-sidebar" aria-label="Menu Nartya Anime" role={drawer ? 'dialog' : undefined} aria-modal={drawer ? true : undefined}>
